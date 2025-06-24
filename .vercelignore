@@ -18,6 +18,12 @@ test-*.html
 # Documentation files (not needed for production)
 implementation-sequence.md
 client-crud-tasks-simple.md
+docs/implementation/
+docs/database/
+docs/scripts/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
 
 # Development tools
 node_modules/
