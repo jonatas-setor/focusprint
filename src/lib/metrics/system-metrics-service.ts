@@ -147,7 +147,6 @@ export class SystemMetricsService {
       }).sort((a, b) => b.requests_count - a.requests_count);
 
     } catch (error) {
-      console.error('Error getting performance metrics:', error);
       return [];
     }
   }
@@ -167,7 +166,6 @@ export class SystemMetricsService {
         .gte('created_at', last24h.toISOString());
 
       if (error || !errorLogs) {
-        console.error('Error fetching error metrics:', error);
         return [];
       }
 

@@ -190,7 +190,6 @@ export class ImpersonationService {
       };
 
     } catch (error) {
-      console.error('Error starting impersonation:', error);
       throw new Error(`Failed to start impersonation: ${error.message}`);
     }
   }
@@ -238,7 +237,6 @@ export class ImpersonationService {
       return { success: true, message: 'Impersonation session ended successfully' };
 
     } catch (error) {
-      console.error('Error ending impersonation:', error);
       return { success: false, message: `Failed to end impersonation: ${error.message}` };
     }
   }
@@ -286,7 +284,6 @@ export class ImpersonationService {
       };
 
     } catch (error) {
-      console.error('Error getting impersonation status:', error);
       return null;
     }
   }
@@ -446,7 +443,7 @@ export class ImpersonationService {
       });
 
     } catch (error) {
-      console.error('Failed to log impersonation event:', error);
+      // Silent fail for logging
     }
   }
 

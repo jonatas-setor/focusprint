@@ -57,13 +57,9 @@ export class AdminAuthService {
    */
   static async getCurrentUser(): Promise<AdminAuthUser | null> {
     try {
-      console.log('🔐 AdminAuthService.getCurrentUser: Starting RBAC validation...');
-
       const { data: { user }, error } = await supabase.auth.getUser();
-      console.log('🔐 Supabase getUser result:', { hasUser: !!user, error: error?.message });
 
       if (error || !user || !user.email) {
-        console.log('❌ No user or error in getUser');
         return null;
       }
 

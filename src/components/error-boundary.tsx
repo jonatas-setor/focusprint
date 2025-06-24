@@ -48,14 +48,16 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   logErrorToService = (error: Error, errorInfo: React.ErrorInfo) => {
     // In production, send to error monitoring service
-    console.error('Error logged:', {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error logged:', {
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+      });
+    }
   };
 
   resetError = () => {

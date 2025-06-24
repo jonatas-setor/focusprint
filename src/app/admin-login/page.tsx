@@ -18,8 +18,6 @@ export default function AdminLoginPage() {
     setSuccess('');
 
     try {
-      console.log('🔐 Iniciando login...');
-
       // Validar domínio do email (não autorização - isso é feito pelo RBAC)
       if (!isValidAdminDomain(email)) {
         logAdminAccessAttempt(email, false, 'Invalid admin domain');
@@ -40,7 +38,6 @@ export default function AdminLoginPage() {
         throw new Error('Falha na autenticação');
       }
 
-      console.log('✅ Login bem-sucedido!', data.user.email);
       logAdminAccessAttempt(email, true);
 
       // Verificar se usuário tem perfil admin válido (RBAC)
@@ -51,7 +48,6 @@ export default function AdminLoginPage() {
         .single();
 
       if (profileError || !profile) {
-        console.error('❌ Erro no perfil admin:', profileError);
         await supabase.auth.signOut();
         logAdminAccessAttempt(email, false, 'Admin profile not found');
         throw new Error('Usuário não possui perfil de administrador válido');
@@ -60,13 +56,11 @@ export default function AdminLoginPage() {
       // Verificar se role é válida
       const validRoles = ['super_admin', 'operations_admin', 'financial_admin', 'technical_admin', 'support_admin'];
       if (!validRoles.includes(profile.role)) {
-        console.error('❌ Role inválida:', profile.role);
         await supabase.auth.signOut();
         logAdminAccessAttempt(email, false, 'Invalid admin role');
         throw new Error('Role de administrador inválida');
       }
 
-      console.log('✅ Perfil admin encontrado:', profile);
       setSuccess(`🎉 Login bem-sucedido! Bem-vindo, ${profile.first_name} ${profile.last_name}!`);
 
       // Redirecionar após 2 segundos
@@ -75,7 +69,6 @@ export default function AdminLoginPage() {
       }, 2000);
 
     } catch (err) {
-      console.error('❌ Erro no login:', err);
       const errorMessage = err instanceof Error ? err.message : 'Erro interno do servidor';
       logAdminAccessAttempt(email, false, errorMessage);
       setError(errorMessage);

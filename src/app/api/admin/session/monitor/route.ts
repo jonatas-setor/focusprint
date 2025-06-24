@@ -72,9 +72,6 @@ export async function GET(request: NextRequest) {
     // Clean up expired sessions
     const cleanedCount = SessionTimeoutService.cleanupExpiredSessions();
 
-    // Log the monitoring access
-    console.log(`🕐 Session monitoring accessed by: ${authResult.user.email}`);
-
     return NextResponse.json({
       statistics: sessionStats,
       sessions: sessionDetails,

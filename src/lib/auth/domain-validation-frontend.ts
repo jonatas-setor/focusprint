@@ -117,15 +117,18 @@ export function validateAdminCredentials(email: string, password: string): {
  * Log admin access attempt for debugging
  */
 export function logAdminAccessAttempt(email: string, success: boolean, error?: string): void {
-  const timestamp = new Date().toISOString();
-  const logData = {
-    timestamp,
-    email: email?.toLowerCase(),
-    success,
-    error,
-    isValidDomain: isValidAdminEmail(email),
-    allowedInfo: getAllowedAdminEmailsInfo()
-  };
+  // Only log in development environment
+  if (process.env.NODE_ENV === 'development') {
+    const timestamp = new Date().toISOString();
+    const logData = {
+      timestamp,
+      email: email?.toLowerCase(),
+      success,
+      error,
+      isValidDomain: isValidAdminEmail(email),
+      allowedInfo: getAllowedAdminEmailsInfo()
+    };
 
-  console.log('🔐 Admin Access Attempt:', logData);
+    console.log('🔐 Admin Access Attempt:', logData);
+  }
 }

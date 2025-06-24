@@ -93,7 +93,6 @@ async function adminMiddleware(
     if (!session) {
       // User is authenticated but no session exists - create one
       session = SessionTimeoutService.createSession(user.id, user.email || '')
-      console.log('🕐 Admin Middleware: Created new session for authenticated user:', user.email)
     }
 
     // Now check if the session is valid (not expired)
@@ -101,7 +100,6 @@ async function adminMiddleware(
       // Session expired - invalidate and redirect to login
       SessionTimeoutService.invalidateSession(user.id)
       const loginUrl = new URL('/admin-login?reason=session_expired', request.url)
-      console.log('🕐 Admin Middleware: Session expired for', user.email)
       return NextResponse.redirect(loginUrl)
     }
 
@@ -109,11 +107,9 @@ async function adminMiddleware(
     SessionTimeoutService.updateActivity(user.id)
 
     // All checks passed - allow access
-    console.log('🔐 Admin Middleware: Access granted to', user.email, '(session valid)')
     return response
 
   } catch (err) {
-    console.error('🔐 Admin Middleware Error:', err)
     const loginUrl = new URL('/admin-login', request.url)
     return NextResponse.redirect(loginUrl)
   }
@@ -128,8 +124,6 @@ async function clientMiddleware(
   // Verificar licença ativa
   // Redirecionar para /auth/login se não autenticado
 
-  console.log('🔐 Client Middleware:', request.nextUrl.pathname)
-
   // Por enquanto, permitir acesso para desenvolvimento
   return response
 }
@@ -140,8 +134,6 @@ async function authMiddleware(
 ) {
   // TODO: Implementar lógica de autenticação
   // Redirecionar usuários já autenticados
-
-  console.log('🔐 Auth Middleware:', request.nextUrl.pathname)
 
   return response
 }

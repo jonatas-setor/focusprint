@@ -165,7 +165,7 @@ export async function checkAdminAuth(supabase: any, requiredPermission?: string,
           'failure'
         );
       } catch (auditError) {
-        console.error('Failed to log domain restriction violation:', auditError);
+        // Silent fail for audit logging
       }
 
       return {

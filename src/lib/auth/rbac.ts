@@ -69,7 +69,6 @@ export class RBACService {
       return { allowed: true };
 
     } catch (error) {
-      console.error('Permission check error:', error);
       return {
         allowed: false,
         reason: 'Permission check failed'
@@ -111,7 +110,6 @@ export class RBACService {
       return { allowed: true };
 
     } catch (error) {
-      console.error('Role check error:', error);
       return {
         allowed: false,
         reason: 'Role check failed'
@@ -153,7 +151,6 @@ export class RBACService {
       };
 
     } catch (error) {
-      console.error('Get admin context error:', error);
       return null;
     }
   }
@@ -196,7 +193,6 @@ export class RBACService {
       return true;
 
     } catch (error) {
-      console.error('Update permissions error:', error);
       return false;
     }
   }
@@ -257,7 +253,6 @@ export class RBACService {
       return data;
 
     } catch (error) {
-      console.error('Create admin error:', error);
       return null;
     }
   }
@@ -266,20 +261,15 @@ export class RBACService {
    * Log security events for audit trail
    */
   private async logSecurityEvent(
-    userId: string, 
-    eventType: string, 
+    userId: string,
+    eventType: string,
     metadata: any
   ): Promise<void> {
     try {
       // This will be implemented when we create the audit logging system
-      console.log('Security Event:', {
-        user_id: userId,
-        event_type: eventType,
-        metadata,
-        timestamp: new Date().toISOString()
-      });
+      // Security events will be logged to audit system in production
     } catch (error) {
-      console.error('Log security event error:', error);
+      // Silent fail for security event logging
     }
   }
 

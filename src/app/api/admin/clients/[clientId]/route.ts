@@ -133,9 +133,6 @@ export async function GET(
       }))
     };
 
-    // Log the access
-    console.log(`👥 Client details accessed: ${client.name} by ${authResult.user.email}`);
-
     return NextResponse.json({
       ...clientDetails,
       accessed_by: {
@@ -147,9 +144,8 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('Client Details API Error:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       },

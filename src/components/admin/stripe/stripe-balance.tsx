@@ -48,7 +48,6 @@ export function StripeBalance() {
         lastUpdated: new Date().toLocaleString('pt-BR')
       });
     } catch (error) {
-      console.error('Error fetching Stripe balance:', error);
       setBalance(prev => ({
         ...prev,
         loading: false,

@@ -293,8 +293,7 @@ export class TwoFactorAudit {
     };
     
     this.logs.push(logEntry);
-    console.log('2FA Audit Log:', logEntry);
-    
+
     // In production, this would be sent to a proper logging service
     // For now, we'll keep the last 1000 entries in memory
     if (this.logs.length > 1000) {

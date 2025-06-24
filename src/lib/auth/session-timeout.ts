@@ -67,8 +67,7 @@ export class SessionTimeoutService {
     };
 
     SessionStorage.set(userId, session);
-    console.log(`🕐 Session created for ${email}, expires at ${new Date(session.expiresAt).toLocaleTimeString()}`);
-    
+
     return session;
   }
 
@@ -143,7 +142,6 @@ export class SessionTimeoutService {
     if (session) {
       session.isActive = false;
       SessionStorage.set(userId, session);
-      console.log(`🕐 Session invalidated for ${session.email}`);
     }
   }
 
@@ -169,9 +167,7 @@ export class SessionTimeoutService {
       }
     });
 
-    if (cleanedCount > 0) {
-      console.log(`🕐 Cleaned up ${cleanedCount} expired sessions`);
-    }
+
 
     return cleanedCount;
   }

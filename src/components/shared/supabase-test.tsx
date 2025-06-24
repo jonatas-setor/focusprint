@@ -22,13 +22,11 @@ export default function SupabaseTest() {
           const { error } = await supabase.auth.getUser();
 
           if (error && error.message !== 'Auth session missing!') {
-            console.error('Supabase connection error:', error);
             setError(error.message);
             setConnectionStatus('error');
             return;
           }
         } catch (err) {
-          console.error('Connection test failed:', err);
           setError(err instanceof Error ? err.message : 'Unknown error');
           setConnectionStatus('error');
           return;
@@ -46,7 +44,6 @@ export default function SupabaseTest() {
 
         setConnectionStatus('connected');
       } catch (err) {
-        console.error('Connection test failed:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
         setConnectionStatus('error');
       }

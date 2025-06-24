@@ -155,8 +155,6 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (error) {
-      console.error('Error creating client:', error);
-
       // Log failed client creation
       await AuditService.logCRUD(
         AuditAction.CLIENT_CREATED,
@@ -168,7 +166,9 @@ export async function POST(request: NextRequest) {
         clientData.name,
         [],
         request
-      ).catch(auditError => console.error('Audit logging failed:', auditError));
+      ).catch(auditError => {
+        // Silent fail for audit logging
+      });
 
       // Handle unique constraint violation
       if (error.code === '23505' && error.message.includes('email')) {

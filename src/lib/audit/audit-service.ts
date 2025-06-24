@@ -52,9 +52,8 @@ export class AuditService {
         .single();
 
       if (error) {
-        console.error('Failed to insert audit log:', error);
         // Don't throw error to avoid breaking the main operation
-        // Just log the failure and return a mock audit log
+        // Just return a mock audit log
         const mockLog: AuditLog = {
           id: `mock_${Date.now()}`,
           timestamp: new Date().toISOString(),
@@ -97,19 +96,11 @@ export class AuditService {
         created_at: insertedLog.created_at
       };
 
-      // Log to console for development
-      console.log('🔍 AUDIT LOG SAVED:', {
-        id: auditLog.id,
-        action: auditLog.action,
-        admin: auditLog.admin_email,
-        resource: `${auditLog.resource_type}:${auditLog.resource_id || 'N/A'}`,
-        severity: auditLog.severity
-      });
+
 
       return auditLog;
 
     } catch (error) {
-      console.error('Audit logging error:', error);
       // Return a mock log to avoid breaking the main operation
       return {
         id: `error_${Date.now()}`,
@@ -187,7 +178,6 @@ export class AuditService {
       const { data: logs, error, count } = await query;
 
       if (error) {
-        console.error('Failed to fetch audit logs:', error);
         return {
           logs: [],
           pagination: { page, limit, total: 0, pages: 0 },
@@ -251,7 +241,6 @@ export class AuditService {
       };
 
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
       return {
         logs: [],
         pagination: { page, limit, total: 0, pages: 0 },
@@ -446,7 +435,6 @@ export class AuditService {
       };
 
     } catch (error) {
-      console.error('Error fetching audit statistics:', error);
       return {
         total_logs: 0,
         logs_today: 0,
@@ -514,9 +502,8 @@ export class AuditService {
     try {
       const supabase = await createClient();
       await supabase.from('audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      console.log('🔍 All audit logs cleared');
     } catch (error) {
-      console.error('Error clearing audit logs:', error);
+      // Error clearing audit logs - handled silently in production
     }
   }
 }

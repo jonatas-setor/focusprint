@@ -94,7 +94,10 @@ export const createDatabaseError = (message: string, context?: Record<string, un
 
 // API error handler for Next.js routes
 export function handleApiError(error: unknown): NextResponse {
-  console.error('API Error:', error);
+  // Log errors only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('API Error:', error);
+  }
 
   // Handle our custom AppError
   if (error instanceof AppError) {
@@ -168,7 +171,10 @@ export function handleApiError(error: unknown): NextResponse {
 
 // Client-side error handler
 export function handleClientError(error: unknown): string {
-  console.error('Client Error:', error);
+  // Log errors only in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Client Error:', error);
+  }
 
   if (error instanceof AppError) {
     return error.message;
@@ -234,7 +240,10 @@ export async function withErrorHandling<T>(
   try {
     return await operation();
   } catch (error) {
-    console.error(`Error in ${context || 'operation'}:`, error);
+    // Log errors only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Error in ${context || 'operation'}:`, error);
+    }
     throw error;
   }
 }
@@ -273,10 +282,11 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
     url: typeof window !== 'undefined' ? window.location.href : undefined,
   };
 
-  console.error('Error logged:', errorInfo);
-
   // In production, send to monitoring service (e.g., Sentry, LogRocket)
   if (process.env.NODE_ENV === 'production') {
     // Example: Sentry.captureException(error, { extra: errorInfo });
+  } else {
+    // Only log to console in development
+    console.error('Error logged:', errorInfo);
   }
 }

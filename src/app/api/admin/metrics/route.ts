@@ -220,7 +220,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ metrics });
 
   } catch (error) {
-    console.error('GET /api/admin/metrics error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

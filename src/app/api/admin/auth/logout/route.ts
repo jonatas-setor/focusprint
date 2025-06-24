@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
     if (user) {
       // Clean up session in SessionTimeoutService
       SessionTimeoutService.invalidateSession(user.id);
-      console.log('🕐 Admin logout: Session invalidated for', user.email);
     }
     
     // Sign out from Supabase

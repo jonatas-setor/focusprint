@@ -822,9 +822,9 @@ export class SubscriptionPlansService {
   ): Promise<void> {
     try {
       // In a real implementation, this would log to the audit system
-      console.log(`Plan Event: ${action} - Plan: ${plan.name} (${plan.id}) - By: ${performedByName} - Details: ${details}`);
+      // Plan events will be logged to audit system in production
     } catch (error) {
-      console.error('Error logging plan event:', error);
+      // Silent fail for plan event logging
     }
   }
 

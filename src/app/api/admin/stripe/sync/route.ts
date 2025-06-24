@@ -36,17 +36,14 @@ export async function POST(request: NextRequest) {
 
 async function handleSyncAll() {
   try {
-    console.log('Starting Stripe sync for all subscriptions...');
-    
     const result = await stripeSyncService.syncAllSubscriptions();
-    
+
     return NextResponse.json({
       message: 'Stripe sync completed',
       result
     });
 
   } catch (error) {
-    console.error('Error in sync all:', error);
     return NextResponse.json(
       { error: 'Failed to sync all subscriptions' },
       { status: 500 }

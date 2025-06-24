@@ -169,7 +169,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error creating audit log:', error);
     return NextResponse.json(
       { error: 'Failed to create audit log' },
       { status: 500 }

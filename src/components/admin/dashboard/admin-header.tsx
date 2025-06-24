@@ -10,7 +10,7 @@ export default function AdminHeader() {
     try {
       await signOut();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silent fail for logout errors
     }
   };
 
