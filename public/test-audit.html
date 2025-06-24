@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Audit Logging</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .logs { max-height: 400px; overflow-y: auto; }
+        .log-entry { border-bottom: 1px solid #eee; padding: 10px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test Audit Logging System</h1>
+    
+    <button onclick="createTestLog()">Create Test Audit Log</button>
+    <button onclick="getAuditLogs()">Get Audit Logs</button>
+    <button onclick="getStatistics()">Get Statistics</button>
+    <button onclick="clearLogs()">Clear All Logs</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        async function createTestLog() {
+            try {
+                const response = await fetch('/api/admin/audit/logs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'admin_created',
+                        resource_type: 'admin',
+                        resource_id: 'test-admin-123',
+                        resource_name: 'Test Admin User',
+                        description: 'Manual test audit log entry created for testing purposes',
+                        severity: 'medium',
+                        metadata: {
+                            test: true,
+                            created_via: 'manual_test'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('Test Audit Log Created', data, true);
+                } else {
+                    showResult('Error Creating Test Log', data, false);
+                }
+            } catch (error) {
+                showResult('Error', { error: error.message }, false);
+            }
+        }
+
+        async function getAuditLogs() {
+            try {
+                const response = await fetch('/api/admin/audit/logs?limit=10');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let logsHtml = `
+                        <h3>Recent Audit Logs (${data.logs.length})</h3>
+                        <div class="logs">
+                    `;
+                    
+                    data.logs.forEach(log => {
+                        logsHtml += `
+                            <div class="log-entry">
+                                <strong>${log.action}</strong> - ${log.admin_email}<br>
+                                <small>${new Date(log.timestamp).toLocaleString()}</small><br>
+                                ${log.details.description}<br>
+                                <em>Severity: ${log.severity}, Status: ${log.status}</em>
+                            </div>
+                        `;
+                    });
+                    
+                    logsHtml += '</div>';
+                    
+                    showResult('Audit Logs Retrieved', logsHtml, true, true);
+                } else {
+                    showResult('Error Getting Logs', data, false);
+                }
+            } catch (error) {
+                showResult('Error', { error: error.message }, false);
+            }
+        }
+
+        async function getStatistics() {
+            try {
+                const response = await fetch('/api/admin/audit/statistics');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const stats = data.statistics;
+                    let statsHtml = `
+                        <h3>Audit Statistics</h3>
+                        <p><strong>Total Logs:</strong> ${stats.total_logs}</p>
+                        <p><strong>Logs Today:</strong> ${stats.logs_today}</p>
+                        <p><strong>Logs This Week:</strong> ${stats.logs_this_week}</p>
+                        <h4>Top Actions:</h4>
+                        <ul>
+                            ${stats.top_actions.map(action => `<li>${action.action}: ${action.count}</li>`).join('')}
+                        </ul>
+                        <h4>Top Admins:</h4>
+                        <ul>
+                            ${stats.top_admins.map(admin => `<li>${admin.admin}: ${admin.count}</li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    showResult('Statistics Retrieved', statsHtml, true, true);
+                } else {
+                    showResult('Error Getting Statistics', data, false);
+                }
+            } catch (error) {
+                showResult('Error', { error: error.message }, false);
+            }
+        }
+
+        async function clearLogs() {
+            if (!confirm('Are you sure you want to clear all audit logs? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/audit/statistics/clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        confirm: 'CLEAR_ALL_AUDIT_LOGS'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('Logs Cleared', data, true);
+                } else {
+                    showResult('Error Clearing Logs', data, false);
+                }
+            } catch (error) {
+                showResult('Error', { error: error.message }, false);
+            }
+        }
+
+        function showResult(title, data, success, isHtml = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = `result ${success ? 'success' : 'error'}`;
+            
+            if (isHtml) {
+                resultDiv.innerHTML = data;
+            } else {
+                resultDiv.innerHTML = `
+                    <h3>${title}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

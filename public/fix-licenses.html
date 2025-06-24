@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix License-Client Relationships</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>Fix License-Client Relationships</h1>
+    
+    <button onclick="checkOrphanedLicenses()">Check Orphaned Licenses</button>
+    <button onclick="fixRelationships()">Fix Relationships (Auto)</button>
+    <button onclick="manualFix()">Manual Fix (Recommended)</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        async function checkOrphanedLicenses() {
+            try {
+                const response = await fetch('/api/admin/licenses/fix-relationships');
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <h3>Orphaned Licenses Check</h3>
+                    <p><strong>Orphaned Licenses:</strong> ${data.orphaned_licenses}</p>
+                    <p><strong>By Plan:</strong> ${JSON.stringify(data.orphaned_by_plan)}</p>
+                    <p><strong>Clients by Plan:</strong> ${JSON.stringify(data.clients_by_plan)}</p>
+                    <p><strong>Can Fix:</strong> ${data.can_fix ? 'Yes' : 'No'}</p>
+                `;
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>Error</h3><p>${error.message}</p>`;
+            }
+        }
+
+        async function fixRelationships() {
+            try {
+                const response = await fetch('/api/admin/licenses/fix-relationships', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <h3>Auto Fix Results</h3>
+                    <p><strong>Message:</strong> ${data.message}</p>
+                    <p><strong>Fixed:</strong> ${data.fixed} licenses</p>
+                    <p><strong>Errors:</strong> ${data.errors} errors</p>
+                    <h4>Details:</h4>
+                    <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                `;
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>Error</h3><p>${error.message}</p>`;
+            }
+        }
+
+        async function manualFix() {
+            try {
+                const response = await fetch('/api/admin/licenses/manual-fix', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <h3>Manual Fix Results</h3>
+                    <p><strong>Message:</strong> ${data.message}</p>
+                    <p><strong>Fixed:</strong> ${data.fixed} licenses</p>
+                    <p><strong>Errors:</strong> ${data.errors} errors</p>
+                    <h4>Details:</h4>
+                    <pre>${JSON.stringify(data.details, null, 2)}</pre>
+                `;
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>Error</h3><p>${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

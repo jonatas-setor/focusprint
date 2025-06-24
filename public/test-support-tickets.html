@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Support Ticket System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        input, select, textarea { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-row { display: flex; gap: 10px; align-items: center; }
+        .ticket-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 10px 0; }
+        .ticket-open { border-color: #28a745; background-color: #f8fff9; }
+        .ticket-in-progress { border-color: #ffc107; background-color: #fffdf5; }
+        .ticket-resolved { border-color: #17a2b8; background-color: #f0fdff; }
+        .ticket-closed { border-color: #6c757d; background-color: #f8f9fa; }
+        .ticket-overdue { border-color: #dc3545; background-color: #fff5f5; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #007bff; background-color: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-open { background-color: #28a745; }
+        .status-in-progress { background-color: #ffc107; }
+        .status-resolved { background-color: #17a2b8; }
+        .status-closed { background-color: #6c757d; }
+        .priority-critical { color: #dc3545; font-weight: bold; }
+        .priority-urgent { color: #fd7e14; font-weight: bold; }
+        .priority-high { color: #ffc107; }
+        .priority-medium { color: #28a745; }
+        .priority-low { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <h1>🎫 Support Ticket System Test</h1>
+    <p>This page tests the Platform Admin support ticket functionality.</p>
+
+    <div class="test-section info">
+        <h3>📋 System Overview</h3>
+        <p><strong>Support Ticket Capabilities:</strong></p>
+        <ul>
+            <li>🎯 Create and manage support tickets with categorization</li>
+            <li>📊 Priority-based SLA management with automatic due dates</li>
+            <li>👥 Ticket assignment to specialized admins</li>
+            <li>💬 Comment system with internal/external visibility</li>
+            <li>📈 Comprehensive ticket metrics and reporting</li>
+            <li>🔍 Advanced filtering and search capabilities</li>
+        </ul>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('tickets-list')">📋 Tickets List</div>
+        <div class="tab" onclick="showTab('create-ticket')">➕ Create Ticket</div>
+        <div class="tab" onclick="showTab('ticket-details')">🔍 Ticket Details</div>
+        <div class="tab" onclick="showTab('assignment')">👥 Assignment</div>
+        <div class="tab" onclick="showTab('statistics')">📊 Statistics</div>
+    </div>
+
+    <!-- Tickets List Tab -->
+    <div id="tickets-list" class="tab-content active">
+        <div class="test-section">
+            <h3>📋 Support Tickets List</h3>
+            
+            <div class="form-row">
+                <button onclick="loadTickets()">🔄 Load Tickets</button>
+                <button onclick="getStatistics()">📊 Get Statistics</button>
+                <select id="filter-status">
+                    <option value="">All Statuses</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="waiting_client">Waiting Client</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+                <select id="filter-priority">
+                    <option value="">All Priorities</option>
+                    <option value="critical">Critical</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+                <select id="filter-category">
+                    <option value="">All Categories</option>
+                    <option value="technical">Technical</option>
+                    <option value="billing">Billing</option>
+                    <option value="account">Account</option>
+                    <option value="feature_request">Feature Request</option>
+                    <option value="bug_report">Bug Report</option>
+                    <option value="security">Security</option>
+                </select>
+                <input type="text" id="search-tickets" placeholder="Search tickets...">
+                <button onclick="applyFilters()">🔍 Filter</button>
+            </div>
+            
+            <div id="tickets-result"></div>
+        </div>
+    </div>
+
+    <!-- Create Ticket Tab -->
+    <div id="create-ticket" class="tab-content">
+        <div class="test-section">
+            <h3>➕ Create New Support Ticket</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Title:</label>
+                        <input type="text" id="ticket-title" placeholder="Unable to access dashboard">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea id="ticket-description" rows="4" placeholder="Detailed description of the issue..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category:</label>
+                        <select id="ticket-category">
+                            <option value="technical">Technical</option>
+                            <option value="billing">Billing</option>
+                            <option value="account">Account</option>
+                            <option value="feature_request">Feature Request</option>
+                            <option value="bug_report">Bug Report</option>
+                            <option value="integration">Integration</option>
+                            <option value="performance">Performance</option>
+                            <option value="security">Security</option>
+                            <option value="training">Training</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Priority:</label>
+                        <select id="ticket-priority">
+                            <option value="">Auto-determine</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Client ID:</label>
+                        <input type="text" id="ticket-client-id" placeholder="client_001" value="client_001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client Name:</label>
+                        <input type="text" id="ticket-client-name" placeholder="Acme Corporation" value="Acme Corporation">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client Email:</label>
+                        <input type="email" id="ticket-client-email" placeholder="admin@acme.com" value="admin@acme.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client Plan:</label>
+                        <select id="ticket-client-plan">
+                            <option value="FREE">Free</option>
+                            <option value="PRO" selected>Pro</option>
+                            <option value="BUSINESS">Business</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Reporter Name:</label>
+                        <input type="text" id="ticket-reporter-name" placeholder="John Smith" value="John Smith">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reporter Email:</label>
+                        <input type="email" id="ticket-reporter-email" placeholder="john@acme.com" value="john@acme.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reporter User ID (optional):</label>
+                        <input type="text" id="ticket-reporter-user-id" placeholder="user_123">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tags (comma-separated):</label>
+                        <input type="text" id="ticket-tags" placeholder="login, authentication, urgent">
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="createTicket()">🎫 Create Support Ticket</button>
+            
+            <div id="create-result"></div>
+        </div>
+    </div>
+
+    <!-- Ticket Details Tab -->
+    <div id="ticket-details" class="tab-content">
+        <div class="test-section">
+            <h3>🔍 Ticket Details & Management</h3>
+            
+            <div class="form-group">
+                <label>Ticket ID or Number:</label>
+                <input type="text" id="detail-ticket-id" placeholder="ticket_001 or TKT-000001">
+                <button onclick="getTicketDetails()">🔍 Get Details</button>
+            </div>
+            
+            <div id="ticket-details-result"></div>
+        </div>
+    </div>
+
+    <!-- Assignment Tab -->
+    <div id="assignment" class="tab-content">
+        <div class="test-section">
+            <h3>👥 Ticket Assignment Management</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Ticket ID:</label>
+                        <input type="text" id="assign-ticket-id" placeholder="ticket_001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Admin ID:</label>
+                        <select id="assign-admin-id">
+                            <option value="admin_001">Technical Support Lead</option>
+                            <option value="admin_002">Billing Specialist</option>
+                            <option value="admin_003">Product Manager</option>
+                            <option value="admin_004">Security Specialist</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Assignment Reason:</label>
+                        <input type="text" id="assign-reason" placeholder="Assigned based on expertise">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <button onclick="assignTicket()">👤 Assign Ticket</button>
+                <button onclick="getAssignmentOptions()">📋 Get Assignment Options</button>
+                <button onclick="unassignTicket()">🚫 Unassign Ticket</button>
+            </div>
+            
+            <div id="assignment-result"></div>
+        </div>
+    </div>
+
+    <!-- Statistics Tab -->
+    <div id="statistics" class="tab-content">
+        <div class="test-section">
+            <h3>📊 Ticket Statistics & Metrics</h3>
+            
+            <button onclick="getDetailedStatistics()">📊 Get Detailed Statistics</button>
+            <button onclick="getSLAReport()">⏱️ Get SLA Report</button>
+            <button onclick="getPerformanceMetrics()">📈 Get Performance Metrics</button>
+            
+            <div id="statistics-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTickets = [];
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function loadTickets() {
+            try {
+                const response = await fetch('/api/admin/tickets');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentTickets = data.tickets;
+                    displayTickets(data);
+                } else {
+                    showResult('tickets-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('tickets-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayTickets(data) {
+            let ticketsHtml = `
+                <h4>🎫 Support Tickets (${data.tickets.length} total)</h4>
+                <p><strong>Summary:</strong> Open: ${data.summary.open_tickets} | 
+                   In Progress: ${data.summary.in_progress_tickets} | 
+                   Resolved: ${data.summary.resolved_tickets} | 
+                   Overdue: ${data.summary.overdue_tickets}</p>
+            `;
+            
+            if (data.tickets.length > 0) {
+                data.tickets.forEach(ticket => {
+                    const now = new Date();
+                    const slaOverdue = new Date(ticket.sla_due_date) < now && !['resolved', 'closed', 'cancelled'].includes(ticket.status);
+                    const statusClass = slaOverdue ? 'ticket-overdue' : `ticket-${ticket.status.replace('_', '-')}`;
+                    const statusIndicator = `status-${ticket.status.replace('_', '-')}`;
+                    const priorityClass = `priority-${ticket.priority}`;
+                    
+                    ticketsHtml += `
+                        <div class="ticket-card ${statusClass}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span class="status-indicator ${statusIndicator}"></span>
+                                    <strong>${ticket.ticket_number}</strong> - ${ticket.title}
+                                    ${slaOverdue ? '<span style="color: red; font-weight: bold;"> (OVERDUE)</span>' : ''}
+                                </div>
+                                <div>
+                                    <button onclick="viewTicketDetails('${ticket.id}')">👁️ View</button>
+                                    <button onclick="editTicket('${ticket.id}')">✏️ Edit</button>
+                                </div>
+                            </div>
+                            <p><strong>Client:</strong> ${ticket.client_name} (${ticket.client_plan})</p>
+                            <p><strong>Reporter:</strong> ${ticket.reporter_name} (${ticket.reporter_email})</p>
+                            <p><strong>Category:</strong> ${ticket.category} | 
+                               <strong>Priority:</strong> <span class="${priorityClass}">${ticket.priority.toUpperCase()}</span> | 
+                               <strong>Status:</strong> ${ticket.status.replace('_', ' ').toUpperCase()}</p>
+                            <p><strong>Assigned:</strong> ${ticket.assigned_admin_name || 'Unassigned'} | 
+                               <strong>SLA Due:</strong> ${new Date(ticket.sla_due_date).toLocaleString()}</p>
+                            <p><strong>Tags:</strong> ${ticket.tags.join(', ') || 'None'} | 
+                               <strong>Comments:</strong> ${ticket.comments.length}</p>
+                            <p><strong>Created:</strong> ${new Date(ticket.created_at).toLocaleString()}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                ticketsHtml += '<p>No support tickets found.</p>';
+            }
+            
+            showResult('tickets-result', ticketsHtml, true);
+        }
+
+        async function createTicket() {
+            const title = document.getElementById('ticket-title').value;
+            const description = document.getElementById('ticket-description').value;
+            const category = document.getElementById('ticket-category').value;
+            const priority = document.getElementById('ticket-priority').value;
+            const clientId = document.getElementById('ticket-client-id').value;
+            const clientName = document.getElementById('ticket-client-name').value;
+            const clientEmail = document.getElementById('ticket-client-email').value;
+            const clientPlan = document.getElementById('ticket-client-plan').value;
+            const reporterName = document.getElementById('ticket-reporter-name').value;
+            const reporterEmail = document.getElementById('ticket-reporter-email').value;
+            const reporterUserId = document.getElementById('ticket-reporter-user-id').value;
+            const tags = document.getElementById('ticket-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (!title || !description || !category || !clientId || !clientName || !clientEmail || !reporterName || !reporterEmail) {
+                showResult('create-result', 'Please fill in all required fields', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        category,
+                        priority: priority || undefined,
+                        client_id: clientId,
+                        client_name: clientName,
+                        client_email: clientEmail,
+                        client_plan: clientPlan,
+                        reporter_name: reporterName,
+                        reporter_email: reporterEmail,
+                        reporter_user_id: reporterUserId || undefined,
+                        tags
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('create-result', `
+                        <h4>✅ Support Ticket Created Successfully!</h4>
+                        <p><strong>Ticket Number:</strong> ${data.ticket.ticket_number}</p>
+                        <p><strong>ID:</strong> ${data.ticket.id}</p>
+                        <p><strong>Title:</strong> ${data.ticket.title}</p>
+                        <p><strong>Priority:</strong> ${data.ticket.priority.toUpperCase()}</p>
+                        <p><strong>SLA Due:</strong> ${new Date(data.ticket.sla_due_date).toLocaleString()}</p>
+                        <p><strong>Status:</strong> ${data.ticket.status.toUpperCase()}</p>
+                    `, true);
+                    
+                    // Clear form
+                    document.getElementById('ticket-title').value = '';
+                    document.getElementById('ticket-description').value = '';
+                    document.getElementById('ticket-tags').value = '';
+                } else {
+                    showResult('create-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('create-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        // Initialize with loading tickets
+        window.onload = function() {
+            loadTickets();
+        };
+    </script>
+</body>
+</html>

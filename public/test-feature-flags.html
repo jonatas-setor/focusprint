@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Feature Flags Management System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        input, select, textarea { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-row { display: flex; gap: 10px; align-items: center; }
+        .flag-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 10px 0; }
+        .flag-enabled { border-color: #28a745; background-color: #f8fff9; }
+        .flag-disabled { border-color: #dc3545; background-color: #fff5f5; }
+        .flag-archived { border-color: #6c757d; background-color: #f8f9fa; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #007bff; background-color: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-enabled { background-color: #28a745; }
+        .status-disabled { background-color: #dc3545; }
+        .status-archived { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+    <h1>🚩 Feature Flags Management System Test</h1>
+    <p>This page tests the Platform Admin feature flags functionality.</p>
+
+    <div class="test-section info">
+        <h3>📋 System Overview</h3>
+        <p><strong>Feature Flags Capabilities:</strong></p>
+        <ul>
+            <li>🎯 Create and manage feature flags with granular controls</li>
+            <li>🔄 Toggle flags on/off with audit logging</li>
+            <li>👥 Client-specific overrides for custom behavior</li>
+            <li>📊 Flag evaluation with context-based rules</li>
+            <li>🔧 Bulk operations for efficient management</li>
+            <li>📈 Rollout percentage controls for gradual releases</li>
+        </ul>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('flags-list')">📋 Flags List</div>
+        <div class="tab" onclick="showTab('create-flag')">➕ Create Flag</div>
+        <div class="tab" onclick="showTab('evaluate-flags')">🧪 Evaluate Flags</div>
+        <div class="tab" onclick="showTab('bulk-operations')">⚡ Bulk Operations</div>
+        <div class="tab" onclick="showTab('client-overrides')">👥 Client Overrides</div>
+    </div>
+
+    <!-- Flags List Tab -->
+    <div id="flags-list" class="tab-content active">
+        <div class="test-section">
+            <h3>📋 Feature Flags List</h3>
+            
+            <div class="form-row">
+                <button onclick="loadFlags()">🔄 Load Flags</button>
+                <button onclick="getStatistics()">📊 Get Statistics</button>
+                <select id="filter-environment">
+                    <option value="">All Environments</option>
+                    <option value="development">Development</option>
+                    <option value="staging">Staging</option>
+                    <option value="production">Production</option>
+                    <option value="all">All</option>
+                </select>
+                <select id="filter-status">
+                    <option value="">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="archived">Archived</option>
+                </select>
+                <input type="text" id="search-flags" placeholder="Search flags...">
+                <button onclick="applyFilters()">🔍 Filter</button>
+            </div>
+            
+            <div id="flags-result"></div>
+        </div>
+    </div>
+
+    <!-- Create Flag Tab -->
+    <div id="create-flag" class="tab-content">
+        <div class="test-section">
+            <h3>➕ Create New Feature Flag</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Flag Name:</label>
+                        <input type="text" id="flag-name" placeholder="Enhanced Dashboard">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Flag Key:</label>
+                        <input type="text" id="flag-key" placeholder="enhanced_dashboard">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description:</label>
+                        <textarea id="flag-description" placeholder="Enable the new enhanced dashboard with real-time metrics"></textarea>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Type:</label>
+                        <select id="flag-type" onchange="updateValueInput()">
+                            <option value="boolean">Boolean</option>
+                            <option value="string">String</option>
+                            <option value="number">Number</option>
+                            <option value="percentage">Percentage</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Default Value:</label>
+                        <input type="text" id="flag-default-value" placeholder="true">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Category:</label>
+                        <select id="flag-category">
+                            <option value="ui_features">UI Features</option>
+                            <option value="api_features">API Features</option>
+                            <option value="performance">Performance</option>
+                            <option value="security">Security</option>
+                            <option value="billing">Billing</option>
+                            <option value="integrations">Integrations</option>
+                            <option value="experimental">Experimental</option>
+                            <option value="maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Environment:</label>
+                        <select id="flag-environment">
+                            <option value="all">All Environments</option>
+                            <option value="development">Development</option>
+                            <option value="staging">Staging</option>
+                            <option value="production">Production</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target Audience:</label>
+                        <select id="flag-audience">
+                            <option value="all_users">All Users</option>
+                            <option value="beta_users">Beta Users</option>
+                            <option value="premium_users">Premium Users</option>
+                            <option value="specific_clients">Specific Clients</option>
+                            <option value="admin_only">Admin Only</option>
+                            <option value="internal_testing">Internal Testing</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Rollout Percentage:</label>
+                        <input type="number" id="flag-rollout" min="0" max="100" value="100">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Tags (comma-separated):</label>
+                <input type="text" id="flag-tags" placeholder="dashboard, ui, metrics">
+            </div>
+            
+            <button onclick="createFlag()">🚩 Create Feature Flag</button>
+            
+            <div id="create-result"></div>
+        </div>
+    </div>
+
+    <!-- Evaluate Flags Tab -->
+    <div id="evaluate-flags" class="tab-content">
+        <div class="test-section">
+            <h3>🧪 Evaluate Feature Flags</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Flag Keys (comma-separated):</label>
+                        <input type="text" id="eval-flag-keys" placeholder="enhanced_dashboard, beta_video_calls">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Environment:</label>
+                        <select id="eval-environment">
+                            <option value="development">Development</option>
+                            <option value="staging">Staging</option>
+                            <option value="production">Production</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Client ID:</label>
+                        <input type="text" id="eval-client-id" placeholder="test-client-123">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client Plan:</label>
+                        <select id="eval-client-plan">
+                            <option value="FREE">Free</option>
+                            <option value="PRO">Pro</option>
+                            <option value="BUSINESS">Business</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>User ID:</label>
+                        <input type="text" id="eval-user-id" placeholder="test-user-456">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>User Email:</label>
+                        <input type="email" id="eval-user-email" placeholder="user@example.com">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <button onclick="evaluateFlags()">🧪 Evaluate Flags</button>
+                <button onclick="loadTestContexts()">📋 Load Test Contexts</button>
+                <button onclick="useTestContext('free')">👤 Use Free User</button>
+                <button onclick="useTestContext('pro')">💎 Use Pro User</button>
+                <button onclick="useTestContext('business')">🏢 Use Business User</button>
+            </div>
+            
+            <div id="evaluate-result"></div>
+        </div>
+    </div>
+
+    <!-- Bulk Operations Tab -->
+    <div id="bulk-operations" class="tab-content">
+        <div class="test-section">
+            <h3>⚡ Bulk Operations</h3>
+            
+            <div class="form-group">
+                <label>Flag IDs (comma-separated):</label>
+                <input type="text" id="bulk-flag-ids" placeholder="flag_001, flag_002, flag_003">
+            </div>
+            
+            <div class="form-group">
+                <label>Operation:</label>
+                <select id="bulk-operation">
+                    <option value="enable">Enable Flags</option>
+                    <option value="disable">Disable Flags</option>
+                    <option value="archive">Archive Flags</option>
+                    <option value="delete">Delete Flags (Requires SYSTEM_CONFIG)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Reason:</label>
+                <input type="text" id="bulk-reason" placeholder="Bulk operation for testing">
+            </div>
+            
+            <div class="form-row">
+                <button onclick="performBulkOperation()">⚡ Perform Bulk Operation</button>
+                <button onclick="getBulkOptions()">📋 Get Bulk Options</button>
+                <button onclick="validateBulkFlags()">✅ Validate Flag IDs</button>
+            </div>
+            
+            <div id="bulk-result"></div>
+        </div>
+    </div>
+
+    <!-- Client Overrides Tab -->
+    <div id="client-overrides" class="tab-content">
+        <div class="test-section">
+            <h3>👥 Client Overrides Management</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Flag ID:</label>
+                        <input type="text" id="override-flag-id" placeholder="flag_001">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client ID:</label>
+                        <input type="text" id="override-client-id" placeholder="client-123">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Client Name:</label>
+                        <input type="text" id="override-client-name" placeholder="Test Client">
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Override Value:</label>
+                        <input type="text" id="override-value" placeholder="true">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reason:</label>
+                        <input type="text" id="override-reason" placeholder="Special configuration for client">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Expires At (optional):</label>
+                        <input type="datetime-local" id="override-expires">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <button onclick="addClientOverride()">➕ Add Override</button>
+                <button onclick="getClientOverrides()">📋 Get Overrides</button>
+                <button onclick="removeClientOverride()">🗑️ Remove Override</button>
+            </div>
+            
+            <div id="override-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentFlags = [];
+        let testContexts = {};
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function loadFlags() {
+            try {
+                const response = await fetch('/api/admin/feature-flags');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentFlags = data.flags;
+                    displayFlags(data);
+                } else {
+                    showResult('flags-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('flags-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayFlags(data) {
+            let flagsHtml = `
+                <h4>📊 Feature Flags (${data.flags.length} total)</h4>
+                <p><strong>Summary:</strong> Active: ${data.summary.active_flags} | 
+                   Inactive: ${data.summary.inactive_flags} | 
+                   Archived: ${data.summary.archived_flags}</p>
+            `;
+            
+            if (data.flags.length > 0) {
+                data.flags.forEach(flag => {
+                    const statusClass = flag.is_enabled ? 'flag-enabled' : 
+                                       flag.status === 'archived' ? 'flag-archived' : 'flag-disabled';
+                    const statusIndicator = flag.is_enabled ? 'status-enabled' : 
+                                           flag.status === 'archived' ? 'status-archived' : 'status-disabled';
+                    
+                    flagsHtml += `
+                        <div class="flag-card ${statusClass}">
+                            <div style="display: flex; justify-content: between; align-items: center;">
+                                <div>
+                                    <span class="status-indicator ${statusIndicator}"></span>
+                                    <strong>${flag.name}</strong> (${flag.key})
+                                </div>
+                                <div>
+                                    <button onclick="toggleFlag('${flag.id}', ${!flag.is_enabled})">
+                                        ${flag.is_enabled ? '🔴 Disable' : '🟢 Enable'}
+                                    </button>
+                                    <button onclick="editFlag('${flag.id}')">✏️ Edit</button>
+                                </div>
+                            </div>
+                            <p><strong>Description:</strong> ${flag.description}</p>
+                            <p><strong>Type:</strong> ${flag.type} | 
+                               <strong>Value:</strong> ${JSON.stringify(flag.current_value)} | 
+                               <strong>Environment:</strong> ${flag.environment}</p>
+                            <p><strong>Category:</strong> ${flag.category} | 
+                               <strong>Rollout:</strong> ${flag.rollout_percentage}% | 
+                               <strong>Audience:</strong> ${flag.target_audience}</p>
+                            <p><strong>Overrides:</strong> ${flag.client_overrides.length} | 
+                               <strong>Tags:</strong> ${flag.tags.join(', ')}</p>
+                            <p><strong>Created:</strong> ${new Date(flag.created_at).toLocaleString()} by ${flag.created_by_name}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                flagsHtml += '<p>No feature flags found.</p>';
+            }
+            
+            showResult('flags-result', flagsHtml, true);
+        }
+
+        async function createFlag() {
+            const name = document.getElementById('flag-name').value;
+            const key = document.getElementById('flag-key').value;
+            const description = document.getElementById('flag-description').value;
+            const type = document.getElementById('flag-type').value;
+            const defaultValue = parseValue(type, document.getElementById('flag-default-value').value);
+            const category = document.getElementById('flag-category').value;
+            const environment = document.getElementById('flag-environment').value;
+            const targetAudience = document.getElementById('flag-audience').value;
+            const rolloutPercentage = parseInt(document.getElementById('flag-rollout').value);
+            const tags = document.getElementById('flag-tags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (!name || !key || !description || defaultValue === null) {
+                showResult('create-result', 'Please fill in all required fields', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/feature-flags', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        key,
+                        description,
+                        type,
+                        default_value: defaultValue,
+                        category,
+                        environment,
+                        target_audience: targetAudience,
+                        rollout_percentage: rolloutPercentage,
+                        tags
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('create-result', `
+                        <h4>✅ Feature Flag Created Successfully!</h4>
+                        <p><strong>ID:</strong> ${data.flag.id}</p>
+                        <p><strong>Key:</strong> ${data.flag.key}</p>
+                        <p><strong>Name:</strong> ${data.flag.name}</p>
+                        <p><strong>Type:</strong> ${data.flag.type}</p>
+                        <p><strong>Value:</strong> ${JSON.stringify(data.flag.current_value)}</p>
+                        <p><strong>Environment:</strong> ${data.flag.environment}</p>
+                    `, true);
+                    
+                    // Clear form
+                    document.getElementById('flag-name').value = '';
+                    document.getElementById('flag-key').value = '';
+                    document.getElementById('flag-description').value = '';
+                    document.getElementById('flag-default-value').value = '';
+                    document.getElementById('flag-tags').value = '';
+                } else {
+                    showResult('create-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('create-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function toggleFlag(flagId, enabled) {
+            try {
+                const response = await fetch(`/api/admin/feature-flags/${flagId}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled,
+                        reason: `Flag ${enabled ? 'enabled' : 'disabled'} via test interface`
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('flags-result', `
+                        <div class="result success">
+                            <h4>✅ Flag ${enabled ? 'Enabled' : 'Disabled'} Successfully!</h4>
+                            <p><strong>Flag:</strong> ${data.flag.name} (${data.flag.key})</p>
+                            <p><strong>New State:</strong> ${data.flag.is_enabled ? 'Enabled' : 'Disabled'}</p>
+                        </div>
+                    ` + document.getElementById('flags-result').innerHTML, true);
+                    
+                    // Reload flags to show updated state
+                    loadFlags();
+                } else {
+                    showResult('flags-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('flags-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function parseValue(type, valueStr) {
+            if (!valueStr) return null;
+            
+            switch (type) {
+                case 'boolean':
+                    return valueStr.toLowerCase() === 'true';
+                case 'number':
+                case 'percentage':
+                    const num = parseFloat(valueStr);
+                    return isNaN(num) ? null : num;
+                case 'json':
+                    try {
+                        return JSON.parse(valueStr);
+                    } catch {
+                        return valueStr; // Return as string if not valid JSON
+                    }
+                case 'string':
+                default:
+                    return valueStr;
+            }
+        }
+
+        function updateValueInput() {
+            const type = document.getElementById('flag-type').value;
+            const input = document.getElementById('flag-default-value');
+            
+            switch (type) {
+                case 'boolean':
+                    input.placeholder = 'true or false';
+                    break;
+                case 'number':
+                    input.placeholder = '42';
+                    break;
+                case 'percentage':
+                    input.placeholder = '75 (0-100)';
+                    break;
+                case 'json':
+                    input.placeholder = '{"key": "value"}';
+                    break;
+                case 'string':
+                default:
+                    input.placeholder = 'string value';
+                    break;
+            }
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        async function evaluateFlags() {
+            const flagKeys = document.getElementById('eval-flag-keys').value.split(',').map(k => k.trim()).filter(k => k);
+            const environment = document.getElementById('eval-environment').value;
+            const clientId = document.getElementById('eval-client-id').value;
+            const clientPlan = document.getElementById('eval-client-plan').value;
+            const userId = document.getElementById('eval-user-id').value;
+            const userEmail = document.getElementById('eval-user-email').value;
+
+            if (flagKeys.length === 0 || !environment) {
+                showResult('evaluate-result', 'Please provide flag keys and environment', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/feature-flags/evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        flag_keys: flagKeys,
+                        context: {
+                            environment,
+                            client_id: clientId || undefined,
+                            client_plan: clientPlan || undefined,
+                            user_id: userId || undefined,
+                            user_email: userEmail || undefined,
+                            user_role: 'member'
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let resultHtml = `
+                        <h4>🧪 Flag Evaluation Results</h4>
+                        <p><strong>Summary:</strong> Enabled: ${data.summary.enabled_flags} |
+                           Disabled: ${data.summary.disabled_flags} |
+                           Errors: ${data.summary.error_flags}</p>
+                    `;
+
+                    data.evaluations.forEach(eval => {
+                        const statusClass = eval.is_enabled ? 'success' : 'warning';
+                        resultHtml += `
+                            <div class="result ${statusClass}" style="margin: 10px 0;">
+                                <strong>Flag:</strong> ${eval.flag_key}<br>
+                                <strong>Value:</strong> ${JSON.stringify(eval.value)}<br>
+                                <strong>Enabled:</strong> ${eval.is_enabled}<br>
+                                <strong>Reason:</strong> ${eval.reason}<br>
+                                ${eval.matched_condition ? `<strong>Matched Condition:</strong> ${eval.matched_condition.description}<br>` : ''}
+                                ${eval.client_override ? `<strong>Client Override:</strong> ${eval.client_override.reason}<br>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    showResult('evaluate-result', resultHtml, true);
+                } else {
+                    showResult('evaluate-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('evaluate-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function performBulkOperation() {
+            const flagIds = document.getElementById('bulk-flag-ids').value.split(',').map(id => id.trim()).filter(id => id);
+            const operation = document.getElementById('bulk-operation').value;
+            const reason = document.getElementById('bulk-reason').value;
+
+            if (flagIds.length === 0 || !operation) {
+                showResult('bulk-result', 'Please provide flag IDs and operation', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/feature-flags/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: operation,
+                        flag_ids: flagIds,
+                        reason: reason || `Bulk ${operation} operation`
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    let resultHtml = `
+                        <h4>⚡ Bulk Operation Results</h4>
+                        <p><strong>Operation:</strong> ${operation}</p>
+                        <p><strong>Success Rate:</strong> ${data.summary.success_rate}%
+                           (${data.summary.successful}/${data.summary.total_flags})</p>
+                    `;
+
+                    data.result.results.forEach(result => {
+                        const statusClass = result.success ? 'success' : 'error';
+                        resultHtml += `
+                            <div class="result ${statusClass}" style="margin: 5px 0; padding: 5px;">
+                                <strong>Flag:</strong> ${result.flag_key} (${result.flag_id})<br>
+                                <strong>Status:</strong> ${result.success ? 'Success' : 'Failed'}<br>
+                                ${result.error ? `<strong>Error:</strong> ${result.error}` : ''}
+                            </div>
+                        `;
+                    });
+
+                    showResult('bulk-result', resultHtml, true);
+                } else {
+                    showResult('bulk-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('bulk-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function addClientOverride() {
+            const flagId = document.getElementById('override-flag-id').value;
+            const clientId = document.getElementById('override-client-id').value;
+            const clientName = document.getElementById('override-client-name').value;
+            const value = document.getElementById('override-value').value;
+            const reason = document.getElementById('override-reason').value;
+            const expiresAt = document.getElementById('override-expires').value;
+
+            if (!flagId || !clientId || !clientName || value === '' || !reason) {
+                showResult('override-result', 'Please fill in all required fields', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/feature-flags/${flagId}/overrides`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: clientId,
+                        client_name: clientName,
+                        value: parseValue('string', value), // Simplified for demo
+                        reason,
+                        expires_at: expiresAt || undefined
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('override-result', `
+                        <h4>✅ Client Override Added Successfully!</h4>
+                        <p><strong>Flag:</strong> ${data.flag.name} (${data.flag.key})</p>
+                        <p><strong>Client:</strong> ${data.override.client_name}</p>
+                        <p><strong>Override Value:</strong> ${JSON.stringify(data.override.value)}</p>
+                        <p><strong>Reason:</strong> ${data.override.reason}</p>
+                        ${data.override.expires_at ? `<p><strong>Expires:</strong> ${new Date(data.override.expires_at).toLocaleString()}</p>` : ''}
+                    `, true);
+                } else {
+                    showResult('override-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('override-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getClientOverrides() {
+            const flagId = document.getElementById('override-flag-id').value;
+
+            if (!flagId) {
+                showResult('override-result', 'Please provide a flag ID', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/feature-flags/${flagId}/overrides`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    let resultHtml = `
+                        <h4>👥 Client Overrides for ${data.flag_info.name}</h4>
+                        <p><strong>Flag Type:</strong> ${data.flag_info.type} |
+                           <strong>Default Value:</strong> ${JSON.stringify(data.flag_info.default_value)}</p>
+                        <p><strong>Total Overrides:</strong> ${data.summary.total_overrides} |
+                           <strong>Active:</strong> ${data.summary.active_overrides}</p>
+                    `;
+
+                    if (data.overrides.length > 0) {
+                        data.overrides.forEach(override => {
+                            const statusClass = override.status === 'active' ? 'success' :
+                                               override.status === 'expired' ? 'warning' : 'error';
+                            resultHtml += `
+                                <div class="result ${statusClass}" style="margin: 10px 0;">
+                                    <strong>Client:</strong> ${override.client_name} (${override.client_id})<br>
+                                    <strong>Value:</strong> ${JSON.stringify(override.value)}<br>
+                                    <strong>Status:</strong> ${override.status}<br>
+                                    <strong>Reason:</strong> ${override.reason}<br>
+                                    <strong>Created:</strong> ${new Date(override.created_at).toLocaleString()}<br>
+                                    ${override.expires_at ? `<strong>Expires:</strong> ${new Date(override.expires_at).toLocaleString()}<br>` : ''}
+                                    <button onclick="removeSpecificOverride('${flagId}', '${override.client_id}')">🗑️ Remove</button>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        resultHtml += '<p>No client overrides found for this flag.</p>';
+                    }
+
+                    showResult('override-result', resultHtml, true);
+                } else {
+                    showResult('override-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('override-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function removeSpecificOverride(flagId, clientId) {
+            try {
+                const response = await fetch(`/api/admin/feature-flags/${flagId}/overrides?client_id=${clientId}&reason=Removed via test interface`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('override-result', `
+                        <div class="result success">
+                            <h4>✅ Override Removed Successfully!</h4>
+                            <p><strong>Client:</strong> ${data.removed_override.client_name}</p>
+                        </div>
+                    ` + document.getElementById('override-result').innerHTML, true);
+
+                    // Refresh overrides list
+                    getClientOverrides();
+                } else {
+                    showResult('override-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('override-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getStatistics() {
+            try {
+                const response = await fetch('/api/admin/feature-flags');
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('flags-result', `
+                        <div class="result info">
+                            <h4>📊 Feature Flags Statistics</h4>
+                            <p><strong>Total Flags:</strong> ${data.summary.total_flags}</p>
+                            <p><strong>Active:</strong> ${data.summary.active_flags} |
+                               <strong>Inactive:</strong> ${data.summary.inactive_flags} |
+                               <strong>Archived:</strong> ${data.summary.archived_flags}</p>
+                            <p><strong>Recent Changes:</strong> ${data.summary.recent_changes} (last 24h)</p>
+                            <p><strong>By Environment:</strong>
+                               Dev: ${data.summary.flags_by_environment.development || 0} |
+                               Staging: ${data.summary.flags_by_environment.staging || 0} |
+                               Prod: ${data.summary.flags_by_environment.production || 0}</p>
+                        </div>
+                    ` + document.getElementById('flags-result').innerHTML, true);
+                } else {
+                    showResult('flags-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('flags-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function useTestContext(type) {
+            const contexts = {
+                free: {
+                    client_id: 'test-client-free',
+                    client_plan: 'FREE',
+                    user_id: 'test-user-free',
+                    user_email: 'user@example.com'
+                },
+                pro: {
+                    client_id: 'test-client-pro',
+                    client_plan: 'PRO',
+                    user_id: 'test-user-pro',
+                    user_email: 'pro@example.com'
+                },
+                business: {
+                    client_id: 'test-client-business',
+                    client_plan: 'BUSINESS',
+                    user_id: 'test-user-business',
+                    user_email: 'business@example.com'
+                }
+            };
+
+            const context = contexts[type];
+            if (context) {
+                document.getElementById('eval-client-id').value = context.client_id;
+                document.getElementById('eval-client-plan').value = context.client_plan;
+                document.getElementById('eval-user-id').value = context.user_id;
+                document.getElementById('eval-user-email').value = context.user_email;
+            }
+        }
+
+        // Initialize with loading flags
+        window.onload = function() {
+            loadFlags();
+        };
+    </script>
+</body>
+</html>

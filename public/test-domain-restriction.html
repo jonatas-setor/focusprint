@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Domain Restriction</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-pass { background-color: #28a745; }
+        .status-fail { background-color: #dc3545; }
+        .status-pending { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Platform Admin Domain Restriction Test</h1>
+    <p>This page tests the @focusprint.com domain restriction enforcement for Platform Admin access.</p>
+
+    <div class="test-section info">
+        <h3>📋 Test Overview</h3>
+        <p><strong>Expected Behavior:</strong></p>
+        <ul>
+            <li>✅ Only @focusprint.com emails should have Platform Admin access</li>
+            <li>❌ All other email domains should be rejected</li>
+            <li>🔍 Domain violations should be logged in audit system</li>
+            <li>🛡️ All admin API endpoints should enforce this restriction</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 API Endpoint Tests</h3>
+        <p>Testing various admin API endpoints to verify domain restriction:</p>
+        
+        <button onclick="testEndpoint('/api/admin/users', 'Admin Users')">Test Admin Users API</button>
+        <button onclick="testEndpoint('/api/admin/clients', 'Clients API')">Test Clients API</button>
+        <button onclick="testEndpoint('/api/admin/licenses', 'Licenses API')">Test Licenses API</button>
+        <button onclick="testEndpoint('/api/admin/audit/logs', 'Audit Logs API')">Test Audit Logs API</button>
+        <button onclick="testEndpoint('/api/admin/audit/statistics', 'Audit Statistics API')">Test Audit Stats API</button>
+        
+        <div id="endpoint-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Test Results Summary</h3>
+        <div id="test-summary">
+            <p>Click the test buttons above to run domain restriction tests.</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Domain Validation Utility Test</h3>
+        <p>Test the domain validation logic directly:</p>
+        
+        <input type="email" id="test-email" placeholder="Enter email to test" style="width: 300px; padding: 8px; margin-right: 10px;">
+        <button onclick="testEmailValidation()">Test Email Domain</button>
+        
+        <div id="email-validation-result"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        async function testEndpoint(endpoint, name) {
+            const resultDiv = document.getElementById('endpoint-results');
+            const testId = `test-${Date.now()}`;
+            
+            // Add pending test result
+            const pendingResult = document.createElement('div');
+            pendingResult.id = testId;
+            pendingResult.className = 'result info';
+            pendingResult.innerHTML = `
+                <span class="status-indicator status-pending"></span>
+                <strong>${name}</strong>: Testing ${endpoint}...
+            `;
+            resultDiv.appendChild(pendingResult);
+
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                const isExpectedError = response.status === 403 && 
+                    data.error && 
+                    data.error.includes('@focusprint.com');
+                
+                const testResult = {
+                    endpoint,
+                    name,
+                    status: response.status,
+                    success: isExpectedError,
+                    error: data.error,
+                    timestamp: new Date().toISOString()
+                };
+                
+                testResults.push(testResult);
+                
+                // Update result display
+                pendingResult.className = `result ${isExpectedError ? 'success' : 'error'}`;
+                pendingResult.innerHTML = `
+                    <span class="status-indicator ${isExpectedError ? 'status-pass' : 'status-fail'}"></span>
+                    <strong>${name}</strong>: ${isExpectedError ? 'PASS' : 'FAIL'}<br>
+                    <small>Status: ${response.status} | Expected: 403 with domain restriction error</small><br>
+                    <small>Response: ${data.error || 'No error message'}</small>
+                `;
+                
+            } catch (error) {
+                const testResult = {
+                    endpoint,
+                    name,
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                testResults.push(testResult);
+                
+                pendingResult.className = 'result error';
+                pendingResult.innerHTML = `
+                    <span class="status-indicator status-fail"></span>
+                    <strong>${name}</strong>: ERROR<br>
+                    <small>${error.message}</small>
+                `;
+            }
+            
+            updateTestSummary();
+        }
+
+        function testEmailValidation() {
+            const email = document.getElementById('test-email').value;
+            const resultDiv = document.getElementById('email-validation-result');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div class="result error">Please enter an email to test</div>';
+                return;
+            }
+            
+            // Simple client-side validation (mirrors server-side logic)
+            const isValidFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            const isDomainAuthorized = email.toLowerCase().endsWith('@focusprint.com');
+            
+            let resultClass = 'success';
+            let statusIcon = 'status-pass';
+            let message = '';
+            
+            if (!isValidFormat) {
+                resultClass = 'error';
+                statusIcon = 'status-fail';
+                message = 'Invalid email format';
+            } else if (!isDomainAuthorized) {
+                resultClass = 'error';
+                statusIcon = 'status-fail';
+                message = 'Domain not authorized - only @focusprint.com emails allowed';
+            } else {
+                message = 'Email domain authorized for Platform Admin access';
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="result ${resultClass}">
+                    <span class="status-indicator ${statusIcon}"></span>
+                    <strong>Email:</strong> ${email}<br>
+                    <strong>Result:</strong> ${message}<br>
+                    <small>Valid Format: ${isValidFormat ? 'Yes' : 'No'} | Authorized Domain: ${isDomainAuthorized ? 'Yes' : 'No'}</small>
+                </div>
+            `;
+        }
+
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(test => test.success).length;
+            const failedTests = totalTests - passedTests;
+            
+            const passRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+            
+            summaryDiv.innerHTML = `
+                <div class="result ${passRate === 100 ? 'success' : 'error'}">
+                    <h4>📊 Test Results Summary</h4>
+                    <p><strong>Total Tests:</strong> ${totalTests}</p>
+                    <p><strong>Passed:</strong> ${passedTests} <span class="status-indicator status-pass"></span></p>
+                    <p><strong>Failed:</strong> ${failedTests} <span class="status-indicator status-fail"></span></p>
+                    <p><strong>Pass Rate:</strong> ${passRate}%</p>
+                    
+                    ${passRate === 100 && totalTests > 0 ? 
+                        '<p><strong>✅ Domain restriction is working correctly!</strong></p>' : 
+                        '<p><strong>⚠️ Some tests failed - domain restriction may not be fully enforced</strong></p>'
+                    }
+                </div>
+                
+                <details style="margin-top: 15px;">
+                    <summary>📋 Detailed Test Results</summary>
+                    <pre>${JSON.stringify(testResults, null, 2)}</pre>
+                </details>
+            `;
+        }
+
+        // Test some example emails on page load
+        window.onload = function() {
+            const examples = [
+                'admin@focusprint.com',
+                'test@gmail.com', 
+                'user@focusprint.com',
+                'invalid-email',
+                'admin@otherdomain.com'
+            ];
+            
+            console.log('Domain Validation Examples:');
+            examples.forEach(email => {
+                const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                const isAuthorized = email.toLowerCase().endsWith('@focusprint.com');
+                console.log(`${email}: Valid=${isValid}, Authorized=${isAuthorized}`);
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bulk Operations System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        input, select, textarea { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-row { display: flex; gap: 10px; align-items: center; }
+        .operation-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 10px 0; }
+        .operation-pending { border-color: #ffc107; background-color: #fffdf5; }
+        .operation-running { border-color: #17a2b8; background-color: #f0fdff; }
+        .operation-completed { border-color: #28a745; background-color: #f8fff9; }
+        .operation-failed { border-color: #dc3545; background-color: #fff5f5; }
+        .operation-cancelled { border-color: #6c757d; background-color: #f8f9fa; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #007bff; background-color: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-pending { background-color: #ffc107; }
+        .status-running { background-color: #17a2b8; }
+        .status-completed { background-color: #28a745; }
+        .status-failed { background-color: #dc3545; }
+        .status-cancelled { background-color: #6c757d; }
+        .progress-bar { width: 100%; height: 20px; background-color: #e9ecef; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: #007bff; transition: width 0.3s ease; }
+        .risk-low { color: #28a745; }
+        .risk-medium { color: #ffc107; }
+        .risk-high { color: #fd7e14; }
+        .risk-critical { color: #dc3545; font-weight: bold; }
+        .category-section { border: 1px solid #ddd; border-radius: 5px; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>⚡ Bulk Operations System Test</h1>
+    <p>This page tests the Platform Admin bulk operations functionality.</p>
+
+    <div class="test-section info">
+        <h3>📋 System Overview</h3>
+        <p><strong>Bulk Operations Capabilities:</strong></p>
+        <ul>
+            <li>👥 User Management: Enable/disable users, update roles, reset passwords</li>
+            <li>📄 License Management: Activate/deactivate licenses, update plans, extend expiration</li>
+            <li>🏢 Client Management: Update plans, suspend/reactivate, billing adjustments</li>
+            <li>🔄 Cross-System Operations: Client migration, audit export, feature flag sync</li>
+            <li>📊 Progress Tracking: Real-time progress monitoring with detailed results</li>
+            <li>🛡️ Risk Management: Operation risk levels with validation and safeguards</li>
+        </ul>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('operations-list')">📋 Operations List</div>
+        <div class="tab" onclick="showTab('create-operation')">➕ Create Operation</div>
+        <div class="tab" onclick="showTab('operation-details')">🔍 Operation Details</div>
+        <div class="tab" onclick="showTab('capabilities')">⚙️ Capabilities</div>
+        <div class="tab" onclick="showTab('statistics')">📊 Statistics</div>
+    </div>
+
+    <!-- Operations List Tab -->
+    <div id="operations-list" class="tab-content active">
+        <div class="test-section">
+            <h3>📋 Bulk Operations List</h3>
+            
+            <div class="form-row">
+                <button onclick="loadOperations()">🔄 Load Operations</button>
+                <button onclick="getStatistics()">📊 Get Statistics</button>
+                <select id="filter-operation-type">
+                    <option value="">All Operation Types</option>
+                    <option value="enable_users">Enable Users</option>
+                    <option value="disable_users">Disable Users</option>
+                    <option value="update_user_roles">Update User Roles</option>
+                    <option value="update_client_plans">Update Client Plans</option>
+                    <option value="client_migration">Client Migration</option>
+                </select>
+                <select id="filter-status">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="running">Running</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+                <input type="text" id="search-operations" placeholder="Search operations...">
+                <button onclick="applyFilters()">🔍 Filter</button>
+            </div>
+            
+            <div id="operations-result"></div>
+        </div>
+    </div>
+
+    <!-- Create Operation Tab -->
+    <div id="create-operation" class="tab-content">
+        <div class="test-section">
+            <h3>➕ Create New Bulk Operation</h3>
+            
+            <div class="grid">
+                <div>
+                    <div class="form-group">
+                        <label>Operation Type:</label>
+                        <select id="operation-type" onchange="updateOperationForm()">
+                            <option value="">Select Operation Type</option>
+                            <optgroup label="User Management">
+                                <option value="enable_users">Enable Users</option>
+                                <option value="disable_users">Disable Users</option>
+                                <option value="update_user_roles">Update User Roles</option>
+                                <option value="reset_passwords">Reset Passwords</option>
+                            </optgroup>
+                            <optgroup label="License Management">
+                                <option value="activate_licenses">Activate Licenses</option>
+                                <option value="deactivate_licenses">Deactivate Licenses</option>
+                                <option value="update_license_plans">Update License Plans</option>
+                                <option value="extend_license_expiration">Extend License Expiration</option>
+                            </optgroup>
+                            <optgroup label="Client Management">
+                                <option value="update_client_plans">Update Client Plans</option>
+                                <option value="suspend_clients">Suspend Clients</option>
+                                <option value="reactivate_clients">Reactivate Clients</option>
+                                <option value="billing_adjustments">Billing Adjustments</option>
+                            </optgroup>
+                            <optgroup label="Cross-System">
+                                <option value="client_migration">Client Migration</option>
+                                <option value="audit_export">Audit Export</option>
+                                <option value="feature_flag_sync">Feature Flag Sync</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target Type:</label>
+                        <select id="target-type">
+                            <option value="users">Users</option>
+                            <option value="licenses">Licenses</option>
+                            <option value="clients">Clients</option>
+                            <option value="feature_flags">Feature Flags</option>
+                            <option value="audit_logs">Audit Logs</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Target IDs (comma-separated):</label>
+                        <textarea id="target-ids" rows="3" placeholder="user_001, user_002, user_003"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Reason:</label>
+                        <input type="text" id="operation-reason" placeholder="Bulk operation for testing">
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Batch Size:</label>
+                        <input type="number" id="batch-size" min="1" max="100" value="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="dry-run"> Dry Run (Validation Only)
+                        </label>
+                    </div>
+                    
+                    <div id="operation-parameters">
+                        <!-- Dynamic parameters will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <button onclick="createOperation()">⚡ Create Bulk Operation</button>
+                <button onclick="validateOperation()">✅ Validate Only</button>
+                <button onclick="loadParameterTemplate()">📋 Load Template</button>
+            </div>
+            
+            <div id="create-result"></div>
+        </div>
+    </div>
+
+    <!-- Operation Details Tab -->
+    <div id="operation-details" class="tab-content">
+        <div class="test-section">
+            <h3>🔍 Operation Details & Management</h3>
+            
+            <div class="form-group">
+                <label>Operation ID:</label>
+                <input type="text" id="detail-operation-id" placeholder="bulk_1234567890_abc123">
+                <button onclick="getOperationDetails()">🔍 Get Details</button>
+                <button onclick="cancelOperation()">🛑 Cancel Operation</button>
+            </div>
+            
+            <div id="operation-details-result"></div>
+        </div>
+    </div>
+
+    <!-- Capabilities Tab -->
+    <div id="capabilities" class="tab-content">
+        <div class="test-section">
+            <h3>⚙️ System Capabilities & Configuration</h3>
+            
+            <button onclick="getCapabilities()">⚙️ Get Capabilities</button>
+            <button onclick="getSystemLimits()">📏 Get System Limits</button>
+            <button onclick="getRiskLevels()">⚠️ Get Risk Levels</button>
+            
+            <div id="capabilities-result"></div>
+        </div>
+    </div>
+
+    <!-- Statistics Tab -->
+    <div id="statistics" class="tab-content">
+        <div class="test-section">
+            <h3>📊 Operations Statistics & Metrics</h3>
+            
+            <button onclick="getDetailedStatistics()">📊 Get Detailed Statistics</button>
+            <button onclick="getPerformanceMetrics()">📈 Get Performance Metrics</button>
+            <button onclick="getOperationHistory()">📚 Get Operation History</button>
+            
+            <div id="statistics-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentOperations = [];
+        let capabilities = null;
+        let parameterTemplates = {};
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function loadOperations() {
+            try {
+                const response = await fetch('/api/admin/bulk-operations');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentOperations = data.operations;
+                    displayOperations(data);
+                } else {
+                    showResult('operations-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('operations-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayOperations(data) {
+            let operationsHtml = `
+                <h4>⚡ Bulk Operations (${data.operations.length} total)</h4>
+                <p><strong>Summary:</strong> Running: ${data.summary.running_operations} | 
+                   Completed: ${data.summary.completed_operations} | 
+                   Failed: ${data.summary.failed_operations} | 
+                   Pending: ${data.summary.pending_operations}</p>
+            `;
+            
+            if (data.operations.length > 0) {
+                data.operations.forEach(operation => {
+                    const statusClass = `operation-${operation.status.replace('_', '-')}`;
+                    const statusIndicator = `status-${operation.status.replace('_', '-')}`;
+                    const progressPercentage = operation.progress.percentage_complete;
+                    
+                    operationsHtml += `
+                        <div class="operation-card ${statusClass}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <span class="status-indicator ${statusIndicator}"></span>
+                                    <strong>${operation.operation_type.replace('_', ' ').toUpperCase()}</strong>
+                                    (${operation.target_type})
+                                </div>
+                                <div>
+                                    <button onclick="viewOperationDetails('${operation.id}')">👁️ View</button>
+                                    ${['pending', 'running'].includes(operation.status) ? 
+                                        `<button onclick="cancelSpecificOperation('${operation.id}')">🛑 Cancel</button>` : ''}
+                                </div>
+                            </div>
+                            <p><strong>Targets:</strong> ${operation.target_ids.length} items | 
+                               <strong>Status:</strong> ${operation.status.replace('_', ' ').toUpperCase()}</p>
+                            <p><strong>Progress:</strong> ${operation.progress.processed_items}/${operation.progress.total_items} 
+                               (${progressPercentage}%) | 
+                               <strong>Stage:</strong> ${operation.progress.stage.replace('_', ' ')}</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                            <p><strong>Success:</strong> ${operation.progress.successful_items} | 
+                               <strong>Failed:</strong> ${operation.progress.failed_items}</p>
+                            <p><strong>Created:</strong> ${new Date(operation.created_at).toLocaleString()} by ${operation.created_by_name}</p>
+                            ${operation.reason ? `<p><strong>Reason:</strong> ${operation.reason}</p>` : ''}
+                        </div>
+                    `;
+                });
+            } else {
+                operationsHtml += '<p>No bulk operations found.</p>';
+            }
+            
+            showResult('operations-result', operationsHtml, true);
+        }
+
+        async function getCapabilities() {
+            try {
+                const response = await fetch('/api/admin/bulk-operations/capabilities');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    capabilities = data;
+                    parameterTemplates = data.parameter_templates;
+                    displayCapabilities(data);
+                } else {
+                    showResult('capabilities-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('capabilities-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayCapabilities(data) {
+            let capabilitiesHtml = `
+                <h4>⚙️ System Capabilities</h4>
+                <p><strong>System Limits:</strong></p>
+                <ul>
+                    <li>Max Concurrent Operations: ${data.system_limits.max_concurrent_operations}</li>
+                    <li>Max Targets per Operation: ${data.system_limits.max_targets_per_operation}</li>
+                    <li>Default Batch Size: ${data.system_limits.default_batch_size}</li>
+                    <li>Operation Timeout: ${data.system_limits.operation_timeout_hours} hours</li>
+                </ul>
+            `;
+
+            // Display operation categories
+            Object.entries(data.operation_categories).forEach(([key, category]) => {
+                capabilitiesHtml += `
+                    <div class="category-section">
+                        <h5>${category.name}</h5>
+                        <p>${category.description}</p>
+                        <p><strong>Operations:</strong> ${category.operations.join(', ')}</p>
+                    </div>
+                `;
+            });
+
+            // Display risk levels
+            capabilitiesHtml += `
+                <h5>⚠️ Risk Levels</h5>
+                <p><span class="risk-low">Low Risk:</span> ${data.risk_levels.low.join(', ')}</p>
+                <p><span class="risk-medium">Medium Risk:</span> ${data.risk_levels.medium.join(', ')}</p>
+                <p><span class="risk-high">High Risk:</span> ${data.risk_levels.high.join(', ')}</p>
+                <p><span class="risk-critical">Critical Risk:</span> ${data.risk_levels.critical.join(', ')}</p>
+            `;
+
+            showResult('capabilities-result', capabilitiesHtml, true);
+        }
+
+        function updateOperationForm() {
+            const operationType = document.getElementById('operation-type').value;
+            const parametersDiv = document.getElementById('operation-parameters');
+            
+            if (!operationType || !parameterTemplates[operationType]) {
+                parametersDiv.innerHTML = '';
+                return;
+            }
+
+            const template = parameterTemplates[operationType];
+            let parametersHtml = '<h5>Operation Parameters:</h5>';
+            
+            Object.entries(template).forEach(([key, value]) => {
+                const inputType = typeof value === 'boolean' ? 'checkbox' : 
+                                 typeof value === 'number' ? 'number' : 'text';
+                
+                if (inputType === 'checkbox') {
+                    parametersHtml += `
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="param-${key}" ${value ? 'checked' : ''}> 
+                                ${key.replace('_', ' ')}
+                            </label>
+                        </div>
+                    `;
+                } else {
+                    parametersHtml += `
+                        <div class="form-group">
+                            <label>${key.replace('_', ' ')}:</label>
+                            <input type="${inputType}" id="param-${key}" value="${value}">
+                        </div>
+                    `;
+                }
+            });
+            
+            parametersDiv.innerHTML = parametersHtml;
+        }
+
+        async function createOperation() {
+            const operationType = document.getElementById('operation-type').value;
+            const targetType = document.getElementById('target-type').value;
+            const targetIds = document.getElementById('target-ids').value.split(',').map(id => id.trim()).filter(id => id);
+            const reason = document.getElementById('operation-reason').value;
+            const batchSize = parseInt(document.getElementById('batch-size').value);
+            const dryRun = document.getElementById('dry-run').checked;
+
+            if (!operationType || !targetType || targetIds.length === 0) {
+                showResult('create-result', 'Please fill in all required fields', false);
+                return;
+            }
+
+            // Collect parameters
+            const parameters = {};
+            const parameterInputs = document.querySelectorAll('[id^="param-"]');
+            parameterInputs.forEach(input => {
+                const key = input.id.replace('param-', '');
+                if (input.type === 'checkbox') {
+                    parameters[key] = input.checked;
+                } else if (input.type === 'number') {
+                    parameters[key] = parseFloat(input.value) || 0;
+                } else {
+                    parameters[key] = input.value;
+                }
+            });
+
+            try {
+                const response = await fetch('/api/admin/bulk-operations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        operation_type: operationType,
+                        target_type: targetType,
+                        target_ids: targetIds,
+                        parameters,
+                        reason,
+                        batch_size: batchSize,
+                        dry_run: dryRun
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('create-result', `
+                        <h4>✅ Bulk Operation ${dryRun ? 'Validated' : 'Created'} Successfully!</h4>
+                        <p><strong>Operation ID:</strong> ${data.operation.id}</p>
+                        <p><strong>Type:</strong> ${data.operation.operation_type}</p>
+                        <p><strong>Targets:</strong> ${data.operation.target_ids.length} items</p>
+                        <p><strong>Status:</strong> ${data.operation.status.toUpperCase()}</p>
+                        <p><strong>Estimated Duration:</strong> ${data.estimated_duration_seconds} seconds</p>
+                        ${data.warnings && data.warnings.length > 0 ? 
+                            `<p><strong>⚠️ Warnings:</strong> ${data.warnings.join(', ')}</p>` : ''}
+                        ${data.validation_results ? 
+                            `<p><strong>Validation:</strong> ${data.validation_results.filter(v => v.can_proceed).length}/${data.validation_results.length} targets valid</p>` : ''}
+                    `, true);
+                    
+                    // Auto-fill detail operation ID
+                    document.getElementById('detail-operation-id').value = data.operation.id;
+                } else {
+                    showResult('create-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('create-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        // Initialize with loading operations and capabilities
+        window.onload = function() {
+            loadOperations();
+            getCapabilities();
+        };
+    </script>
+</body>
+</html>

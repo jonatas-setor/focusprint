@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Real Metrics Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #007bff; background-color: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .metric-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: white; }
+        .metric-value { font-size: 2em; font-weight: bold; color: #007bff; }
+        .metric-label { color: #666; font-size: 0.9em; }
+        .metric-change { font-size: 0.8em; margin-top: 5px; }
+        .metric-up { color: #28a745; }
+        .metric-down { color: #dc3545; }
+        .metric-stable { color: #6c757d; }
+        .health-excellent { color: #28a745; font-weight: bold; }
+        .health-good { color: #20c997; font-weight: bold; }
+        .health-warning { color: #ffc107; font-weight: bold; }
+        .health-critical { color: #dc3545; font-weight: bold; }
+        .chart-container { height: 200px; background: #f8f9fa; border-radius: 5px; display: flex; align-items: center; justify-content: center; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>📊 Real Metrics Dashboard Test</h1>
+    <p>This page tests the Platform Admin dashboard with real-time metrics from actual database queries.</p>
+
+    <div class="test-section info">
+        <h3>🎯 Real Data Implementation</h3>
+        <p><strong>All Mock Data Eliminated:</strong></p>
+        <ul>
+            <li>✅ Client metrics from real database queries</li>
+            <li>✅ Financial KPIs calculated from actual subscription data</li>
+            <li>✅ System performance metrics from audit logs</li>
+            <li>✅ User activity metrics from real user data</li>
+            <li>✅ Storage metrics from actual file attachments</li>
+            <li>✅ API usage metrics from audit trail</li>
+        </ul>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('overview')">📊 Overview</div>
+        <div class="tab" onclick="showTab('financial')">💰 Financial</div>
+        <div class="tab" onclick="showTab('platform')">🏢 Platform</div>
+        <div class="tab" onclick="showTab('system')">⚙️ System</div>
+        <div class="tab" onclick="showTab('clients')">👥 Clients</div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview" class="tab-content active">
+        <div class="test-section">
+            <h3>📊 Dashboard Overview</h3>
+            <button onclick="loadDashboard()">🔄 Load Dashboard</button>
+            <button onclick="refreshMetrics()">🔄 Refresh Metrics</button>
+            
+            <div id="overview-result" class="loading">Click "Load Dashboard" to fetch real metrics...</div>
+        </div>
+    </div>
+
+    <!-- Financial Tab -->
+    <div id="financial" class="tab-content">
+        <div class="test-section">
+            <h3>💰 Financial Metrics</h3>
+            <button onclick="loadFinancialMetrics()">💰 Load Financial KPIs</button>
+            <button onclick="getRevenueBreakdown()">📊 Revenue Breakdown</button>
+            <button onclick="getChurnAnalysis()">📉 Churn Analysis</button>
+            
+            <div id="financial-result" class="loading">Click "Load Financial KPIs" to fetch real financial data...</div>
+        </div>
+    </div>
+
+    <!-- Platform Tab -->
+    <div id="platform" class="tab-content">
+        <div class="test-section">
+            <h3>🏢 Platform Metrics</h3>
+            <button onclick="loadPlatformMetrics()">🏢 Load Platform Overview</button>
+            <button onclick="getClientMetrics()">👥 Client Metrics</button>
+            <button onclick="getUserMetrics()">👤 User Metrics</button>
+            
+            <div id="platform-result" class="loading">Click "Load Platform Overview" to fetch real platform data...</div>
+        </div>
+    </div>
+
+    <!-- System Tab -->
+    <div id="system" class="tab-content">
+        <div class="test-section">
+            <h3>⚙️ System Metrics</h3>
+            <button onclick="loadSystemMetrics()">⚙️ Load System Status</button>
+            <button onclick="getPerformanceMetrics()">📈 Performance Metrics</button>
+            <button onclick="getErrorMetrics()">🚨 Error Analysis</button>
+            
+            <div id="system-result" class="loading">Click "Load System Status" to fetch real system data...</div>
+        </div>
+    </div>
+
+    <!-- Clients Tab -->
+    <div id="clients" class="tab-content">
+        <div class="test-section">
+            <h3>👥 Client Details</h3>
+            <div>
+                <label>Client ID:</label>
+                <input type="text" id="client-id" placeholder="Enter client ID">
+                <button onclick="loadClientDetails()">🔍 Load Client Details</button>
+            </div>
+            <button onclick="loadAllClients()">👥 Load All Clients</button>
+            
+            <div id="clients-result" class="loading">Enter a client ID or load all clients to see real metrics...</div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function loadDashboard() {
+            showLoading('overview-result');
+            try {
+                const response = await fetch('/api/admin/dashboard');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayDashboardOverview(data);
+                } else {
+                    showResult('overview-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('overview-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayDashboardOverview(data) {
+            const kpis = data.kpis;
+            const health = data.health_indicators;
+            
+            let html = `
+                <h4>🎯 Key Performance Indicators</h4>
+                <div class="grid">
+                    <div class="metric-card">
+                        <div class="metric-value">R$ ${kpis.mrr.toLocaleString()}</div>
+                        <div class="metric-label">Monthly Recurring Revenue</div>
+                        <div class="metric-change metric-${kpis.revenue_growth > 0 ? 'up' : kpis.revenue_growth < 0 ? 'down' : 'stable'}">
+                            ${kpis.revenue_growth > 0 ? '↗' : kpis.revenue_growth < 0 ? '↘' : '→'} ${kpis.revenue_growth}%
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${kpis.total_clients}</div>
+                        <div class="metric-label">Total Clients</div>
+                        <div class="metric-change metric-${kpis.client_growth > 0 ? 'up' : 'stable'}">
+                            ${kpis.client_growth > 0 ? '↗' : '→'} ${kpis.client_growth}% (30d)
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${kpis.total_users}</div>
+                        <div class="metric-label">Total Users</div>
+                        <div class="metric-change metric-${kpis.user_growth > 0 ? 'up' : 'stable'}">
+                            ${kpis.user_growth > 0 ? '↗' : '→'} ${kpis.user_growth}% (30d)
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${kpis.churn_rate}%</div>
+                        <div class="metric-label">Churn Rate</div>
+                        <div class="metric-change metric-${kpis.churn_rate < 5 ? 'up' : 'down'}">
+                            ${kpis.churn_rate < 5 ? 'Good' : 'Needs Attention'}
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${kpis.uptime}%</div>
+                        <div class="metric-label">System Uptime</div>
+                        <div class="metric-change metric-${kpis.uptime > 99 ? 'up' : 'warning'}">
+                            ${kpis.avg_response_time}ms avg response
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-value">${kpis.active_sessions}</div>
+                        <div class="metric-label">Active Sessions</div>
+                        <div class="metric-change metric-stable">
+                            Real-time data
+                        </div>
+                    </div>
+                </div>
+                
+                <h4>🏥 System Health</h4>
+                <div class="grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Financial Health</div>
+                        <div class="health-${health.financial_health}">${health.financial_health.toUpperCase()}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Platform Health</div>
+                        <div class="health-${health.platform_health}">${health.platform_health.toUpperCase()}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">System Health</div>
+                        <div class="health-${health.system_health}">${health.system_health.toUpperCase()}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Overall Health</div>
+                        <div class="health-${health.overall_health}">${health.overall_health.toUpperCase()}</div>
+                    </div>
+                </div>
+                
+                <h4>📈 Recent Activity</h4>
+                <div class="grid">
+                    <div class="metric-card">
+                        <div class="metric-value">${data.recent_activity.new_clients_7d}</div>
+                        <div class="metric-label">New Clients (7d)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.recent_activity.new_users_7d}</div>
+                        <div class="metric-label">New Users (7d)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.recent_activity.support_tickets_7d}</div>
+                        <div class="metric-label">Support Tickets (7d)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${data.recent_activity.system_alerts_7d}</div>
+                        <div class="metric-label">System Alerts (7d)</div>
+                    </div>
+                </div>
+                
+                <p><strong>✅ Data Source:</strong> All metrics calculated from real database queries</p>
+                <p><strong>🕒 Last Updated:</strong> ${new Date(data.generated_at).toLocaleString()}</p>
+            `;
+            
+            showResult('overview-result', html, true);
+        }
+
+        async function loadFinancialMetrics() {
+            showLoading('financial-result');
+            try {
+                const response = await fetch('/api/admin/dashboard');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayFinancialMetrics(data.financial_metrics, data.revenue_breakdown);
+                } else {
+                    showResult('financial-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('financial-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayFinancialMetrics(financial, revenue) {
+            let html = `
+                <h4>💰 Financial KPIs</h4>
+                <div class="grid">
+                    <div class="metric-card">
+                        <div class="metric-value">R$ ${financial.mrr.toLocaleString()}</div>
+                        <div class="metric-label">Monthly Recurring Revenue</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">R$ ${financial.arr.toLocaleString()}</div>
+                        <div class="metric-label">Annual Recurring Revenue</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${financial.churn_rate}%</div>
+                        <div class="metric-label">Churn Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">R$ ${financial.ltv.toLocaleString()}</div>
+                        <div class="metric-label">Lifetime Value</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">R$ ${financial.cac.toLocaleString()}</div>
+                        <div class="metric-label">Customer Acquisition Cost</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${financial.active_subscriptions}</div>
+                        <div class="metric-label">Active Subscriptions</div>
+                    </div>
+                </div>
+                
+                <h4>📊 Revenue Breakdown by Plan</h4>
+                <div class="grid">
+            `;
+            
+            revenue.forEach(plan => {
+                html += `
+                    <div class="metric-card">
+                        <div class="metric-value">${plan.plan.toUpperCase()}</div>
+                        <div class="metric-label">${plan.subscribers} subscribers</div>
+                        <div class="metric-change">R$ ${plan.mrr.toLocaleString()} MRR (${plan.percentage}%)</div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p><strong>✅ Real Financial Data:</strong> Calculated from actual client subscriptions and payment data</p>
+            `;
+            
+            showResult('financial-result', html, true);
+        }
+
+        async function loadAllClients() {
+            showLoading('clients-result');
+            try {
+                const response = await fetch('/api/admin/clients');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayClientsMetrics(data.clients);
+                } else {
+                    showResult('clients-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('clients-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayClientsMetrics(clients) {
+            let html = `
+                <h4>👥 Client Metrics Overview</h4>
+                <div class="grid">
+            `;
+            
+            clients.slice(0, 6).forEach(client => {
+                const metrics = client.metrics;
+                html += `
+                    <div class="metric-card">
+                        <div class="metric-value">${client.name}</div>
+                        <div class="metric-label">${client.plan} Plan</div>
+                        <div class="metric-change">
+                            👤 ${metrics.total_users} users (${metrics.active_users} active)<br>
+                            📁 ${metrics.total_projects} projects<br>
+                            💾 ${metrics.storage_used_mb.toFixed(1)} MB used<br>
+                            🕒 ${new Date(metrics.last_activity).toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p><strong>✅ Real Client Data:</strong> Metrics calculated from actual user activity, projects, and storage usage</p>
+                <p><strong>📊 Total Clients:</strong> ${clients.length}</p>
+            `;
+            
+            showResult('clients-result', html, true);
+        }
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.className = 'loading';
+            element.innerHTML = '🔄 Loading real metrics from database...';
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        // Auto-load dashboard on page load
+        window.onload = function() {
+            loadDashboard();
+        };
+    </script>
+</body>
+</html>

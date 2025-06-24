@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Plans Management System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { border-bottom-color: #007bff; background-color: #f8f9fa; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .plan-card { border: 1px solid #ddd; border-radius: 5px; padding: 15px; background: white; }
+        .plan-header { display: flex; justify-content: between; align-items: center; margin-bottom: 10px; }
+        .plan-name { font-size: 1.2em; font-weight: bold; color: #007bff; }
+        .plan-price { font-size: 1.1em; color: #28a745; }
+        .plan-status { padding: 3px 8px; border-radius: 3px; font-size: 0.8em; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-draft { background: #fff3cd; color: #856404; }
+        .status-deprecated { background: #f8d7da; color: #721c24; }
+        .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+        .feature-list li { padding: 2px 0; font-size: 0.9em; }
+        .feature-enabled { color: #28a745; }
+        .feature-disabled { color: #6c757d; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; 
+        }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+        .btn-primary { background: #007bff; color: white; border: none; }
+        .btn-success { background: #28a745; color: white; border: none; }
+        .btn-warning { background: #ffc107; color: black; border: none; }
+        .btn-danger { background: #dc3545; color: white; border: none; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
+        .metric-item { text-align: center; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .metric-value { font-size: 1.5em; font-weight: bold; color: #007bff; }
+        .metric-label { font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>📋 Plans Management System Test</h1>
+    <p>This page tests the comprehensive subscription plans management system for Platform Admin.</p>
+
+    <div class="test-section info">
+        <h3>🎯 Plans Management Features</h3>
+        <p><strong>Complete Subscription Plans Administration:</strong></p>
+        <ul>
+            <li>✅ CRUD operations for subscription plans</li>
+            <li>✅ Plan versioning and history tracking</li>
+            <li>✅ Client management by plan</li>
+            <li>✅ Usage metrics and analytics</li>
+            <li>✅ Plan migration capabilities</li>
+            <li>✅ Pricing and feature configuration</li>
+        </ul>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('overview')">📊 Overview</div>
+        <div class="tab" onclick="showTab('crud')">📝 CRUD Operations</div>
+        <div class="tab" onclick="showTab('versions')">🔄 Versioning</div>
+        <div class="tab" onclick="showTab('clients')">👥 Clients by Plan</div>
+        <div class="tab" onclick="showTab('create')">➕ Create Plan</div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview" class="tab-content active">
+        <div class="test-section">
+            <h3>📊 Plans Overview</h3>
+            <button onclick="loadPlansOverview()" class="btn-primary">🔄 Load All Plans</button>
+            <button onclick="getPlansMetrics()" class="btn-success">📈 Get Metrics</button>
+            
+            <div id="overview-result" class="loading">Click "Load All Plans" to see subscription plans...</div>
+        </div>
+    </div>
+
+    <!-- CRUD Operations Tab -->
+    <div id="crud" class="tab-content">
+        <div class="test-section">
+            <h3>📝 CRUD Operations</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Plan ID:</label>
+                    <input type="text" id="plan-id" placeholder="Enter plan ID">
+                </div>
+                <div class="form-group">
+                    <label>Action:</label>
+                    <select id="crud-action">
+                        <option value="get">Get Plan Details</option>
+                        <option value="update">Update Plan</option>
+                        <option value="delete">Delete Plan</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="executeCrudOperation()" class="btn-primary">🔧 Execute Operation</button>
+            
+            <div id="crud-result" class="loading">Select an operation and plan ID...</div>
+        </div>
+    </div>
+
+    <!-- Versioning Tab -->
+    <div id="versions" class="tab-content">
+        <div class="test-section">
+            <h3>🔄 Plan Versioning</h3>
+            <div class="form-group">
+                <label>Plan ID for Versioning:</label>
+                <input type="text" id="version-plan-id" placeholder="Enter plan ID">
+            </div>
+            <button onclick="getPlanVersions()" class="btn-primary">📋 Get Versions</button>
+            <button onclick="createNewVersion()" class="btn-success">➕ Create New Version</button>
+            
+            <div id="versions-result" class="loading">Enter a plan ID to manage versions...</div>
+        </div>
+    </div>
+
+    <!-- Clients by Plan Tab -->
+    <div id="clients" class="tab-content">
+        <div class="test-section">
+            <h3>👥 Clients by Plan</h3>
+            <div class="form-group">
+                <label>Plan ID:</label>
+                <input type="text" id="clients-plan-id" placeholder="Enter plan ID">
+            </div>
+            <button onclick="getPlanClients()" class="btn-primary">👥 Get Plan Clients</button>
+            <button onclick="analyzePlanUsage()" class="btn-success">📊 Analyze Usage</button>
+            
+            <div id="clients-result" class="loading">Enter a plan ID to see clients...</div>
+        </div>
+    </div>
+
+    <!-- Create Plan Tab -->
+    <div id="create" class="tab-content">
+        <div class="test-section">
+            <h3>➕ Create New Plan</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Plan Name:</label>
+                    <input type="text" id="new-plan-name" placeholder="e.g., premium">
+                </div>
+                <div class="form-group">
+                    <label>Display Name:</label>
+                    <input type="text" id="new-plan-display" placeholder="e.g., Premium Plan">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea id="new-plan-description" placeholder="Plan description..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Monthly Price (cents):</label>
+                    <input type="number" id="new-plan-price" placeholder="e.g., 9900 for $99.00">
+                </div>
+                <div class="form-group">
+                    <label>Currency:</label>
+                    <select id="new-plan-currency">
+                        <option value="BRL">BRL</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="createNewPlan()" class="btn-success">➕ Create Plan</button>
+            
+            <div id="create-result" class="loading">Fill the form to create a new plan...</div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function loadPlansOverview() {
+            showLoading('overview-result');
+            try {
+                const response = await fetch('/api/admin/plans');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPlansOverview(data);
+                } else {
+                    showResult('overview-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('overview-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayPlansOverview(data) {
+            const plans = data.plans;
+            const summary = data.summary;
+            
+            let html = `
+                <h4>📊 Plans Summary</h4>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.total_plans}</div>
+                        <div class="metric-label">Total Plans</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.active_plans}</div>
+                        <div class="metric-label">Active Plans</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.draft_plans}</div>
+                        <div class="metric-label">Draft Plans</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.deprecated_plans}</div>
+                        <div class="metric-label">Deprecated Plans</div>
+                    </div>
+                </div>
+                
+                <h4>📋 All Plans</h4>
+                <div class="grid">
+            `;
+            
+            plans.forEach(plan => {
+                const price = plan.pricing.monthly_price_cents / 100;
+                const currency = plan.pricing.currency;
+                
+                html += `
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">${plan.display_name}</div>
+                            <div class="plan-status status-${plan.status}">${plan.status.toUpperCase()}</div>
+                        </div>
+                        <div class="plan-price">${currency} ${price.toFixed(2)}/month</div>
+                        <div style="font-size: 0.9em; color: #666; margin: 5px 0;">${plan.description}</div>
+                        
+                        <div style="margin: 10px 0;">
+                            <strong>Limits:</strong><br>
+                            👤 ${plan.limits.max_users === -1 ? 'Unlimited' : plan.limits.max_users} users<br>
+                            📁 ${plan.limits.max_projects === -1 ? 'Unlimited' : plan.limits.max_projects} projects<br>
+                            💾 ${plan.limits.storage_gb} GB storage
+                        </div>
+                        
+                        <div style="margin: 10px 0;">
+                            <strong>Key Features:</strong>
+                            <ul class="feature-list">
+                                <li class="${plan.features.video_conferencing ? 'feature-enabled' : 'feature-disabled'}">
+                                    ${plan.features.video_conferencing ? '✅' : '❌'} Video Conferencing
+                                </li>
+                                <li class="${plan.features.advanced_reporting ? 'feature-enabled' : 'feature-disabled'}">
+                                    ${plan.features.advanced_reporting ? '✅' : '❌'} Advanced Reporting
+                                </li>
+                                <li class="${plan.features.api_access ? 'feature-enabled' : 'feature-disabled'}">
+                                    ${plan.features.api_access ? '✅' : '❌'} API Access
+                                </li>
+                                <li class="${plan.features.priority_support ? 'feature-enabled' : 'feature-disabled'}">
+                                    ${plan.features.priority_support ? '✅' : '❌'} Priority Support
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div style="font-size: 0.8em; color: #666;">
+                            Version ${plan.version} • Created ${new Date(plan.created_at).toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p><strong>✅ Real Plans Data:</strong> All plans loaded from subscription management system</p>
+                <p><strong>🕒 Last Updated:</strong> ${new Date().toLocaleString()}</p>
+            `;
+            
+            showResult('overview-result', html, true);
+        }
+
+        async function executeCrudOperation() {
+            const planId = document.getElementById('plan-id').value;
+            const action = document.getElementById('crud-action').value;
+            
+            if (!planId) {
+                showResult('crud-result', 'Please enter a plan ID', false);
+                return;
+            }
+            
+            showLoading('crud-result');
+            
+            try {
+                let response;
+                
+                switch (action) {
+                    case 'get':
+                        response = await fetch(`/api/admin/plans/${planId}`);
+                        break;
+                    case 'update':
+                        response = await fetch(`/api/admin/plans/${planId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                updates: { status: 'active' },
+                                reason: 'Test update from admin interface'
+                            })
+                        });
+                        break;
+                    case 'delete':
+                        response = await fetch(`/api/admin/plans/${planId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                reason: 'Test deletion from admin interface'
+                            })
+                        });
+                        break;
+                }
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let html = `<h4>✅ ${action.toUpperCase()} Operation Successful</h4>`;
+                    html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    showResult('crud-result', html, true);
+                } else {
+                    showResult('crud-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('crud-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getPlanVersions() {
+            const planId = document.getElementById('version-plan-id').value;
+            
+            if (!planId) {
+                showResult('versions-result', 'Please enter a plan ID', false);
+                return;
+            }
+            
+            showLoading('versions-result');
+            
+            try {
+                const response = await fetch(`/api/admin/plans/${planId}/versions`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPlanVersions(data);
+                } else {
+                    showResult('versions-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('versions-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayPlanVersions(data) {
+            let html = `
+                <h4>🔄 Plan Versions: ${data.plan_name}</h4>
+                <p><strong>Current Version:</strong> ${data.current_version} | <strong>Total Versions:</strong> ${data.total_versions}</p>
+                
+                <div class="grid">
+            `;
+            
+            data.versions.forEach(version => {
+                html += `
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">Version ${version.version}</div>
+                            <div class="plan-status ${version.is_current ? 'status-active' : 'status-draft'}">
+                                ${version.is_current ? 'CURRENT' : 'HISTORICAL'}
+                            </div>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>Changes:</strong> ${version.changes_summary}
+                        </div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            Created by ${version.created_by_name}<br>
+                            ${new Date(version.created_at).toLocaleString()}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <strong>Price:</strong> ${version.plan_snapshot.pricing.currency} ${(version.plan_snapshot.pricing.monthly_price_cents / 100).toFixed(2)}<br>
+                            <strong>Status:</strong> ${version.plan_snapshot.status}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p><strong>✅ Version History:</strong> Complete audit trail of plan changes</p>
+            `;
+            
+            showResult('versions-result', html, true);
+        }
+
+        async function getPlanClients() {
+            const planId = document.getElementById('clients-plan-id').value;
+            
+            if (!planId) {
+                showResult('clients-result', 'Please enter a plan ID', false);
+                return;
+            }
+            
+            showLoading('clients-result');
+            
+            try {
+                const response = await fetch(`/api/admin/plans/${planId}/clients`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPlanClients(data);
+                } else {
+                    showResult('clients-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('clients-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function displayPlanClients(data) {
+            const summary = data.summary;
+            
+            let html = `
+                <h4>👥 Clients for Plan: ${data.plan.name}</h4>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.total_clients}</div>
+                        <div class="metric-label">Total Clients</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.active_clients}</div>
+                        <div class="metric-label">Active</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${summary.trial_clients}</div>
+                        <div class="metric-label">Trial</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">$${summary.total_monthly_revenue.toFixed(2)}</div>
+                        <div class="metric-label">Monthly Revenue</div>
+                    </div>
+                </div>
+                
+                <h4>📊 Client Details</h4>
+                <div class="grid">
+            `;
+            
+            data.clients.slice(0, 6).forEach(client => {
+                html += `
+                    <div class="plan-card">
+                        <div class="plan-header">
+                            <div class="plan-name">${client.name}</div>
+                            <div class="plan-status status-${client.status}">${client.status.toUpperCase()}</div>
+                        </div>
+                        
+                        <div style="margin: 10px 0;">
+                            <strong>Usage:</strong><br>
+                            👤 ${client.usage.users_count} users (${client.usage_analysis.users_utilization}%)<br>
+                            📁 ${client.usage.projects_count} projects<br>
+                            💾 ${client.usage.storage_used_gb.toFixed(2)} GB (${client.usage_analysis.storage_utilization}%)
+                        </div>
+                        
+                        <div style="margin: 10px 0;">
+                            <strong>Health:</strong> 
+                            <span class="health-${client.usage_analysis.health_status}">
+                                ${client.usage_analysis.health_status.toUpperCase()} (${client.usage_analysis.health_score}%)
+                            </span>
+                        </div>
+                        
+                        <div style="font-size: 0.8em; color: #666;">
+                            Subscribed ${client.subscription_info.days_subscribed} days ago<br>
+                            Revenue: ${client.subscription_info.currency} ${client.subscription_info.monthly_revenue}/month
+                        </div>
+                        
+                        <div style="margin-top: 10px; font-size: 0.8em;">
+                            <strong>Recommendations:</strong><br>
+                            ${client.recommendations.slice(0, 2).map(rec => `• ${rec}`).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <p><strong>✅ Client Analytics:</strong> Real usage data and recommendations</p>
+            `;
+            
+            showResult('clients-result', html, true);
+        }
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.className = 'loading';
+            element.innerHTML = '🔄 Loading...';
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        // Auto-load plans overview on page load
+        window.onload = function() {
+            loadPlansOverview();
+        };
+    </script>
+</body>
+</html>

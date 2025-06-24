@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Client Impersonation System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; font-size: 14px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px; }
+        input, select, textarea { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .form-group { margin: 10px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .permissions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .permission-item { padding: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .session-card { border: 1px solid #ddd; border-radius: 5px; padding: 10px; margin: 10px 0; }
+        .session-active { border-color: #28a745; background-color: #f8fff9; }
+        .session-expired { border-color: #ffc107; background-color: #fffdf5; }
+        .session-terminated { border-color: #dc3545; background-color: #fff5f5; }
+    </style>
+</head>
+<body>
+    <h1>🎭 Client Impersonation System Test</h1>
+    <p>This page tests the Platform Admin client impersonation functionality.</p>
+
+    <div class="test-section info">
+        <h3>📋 System Overview</h3>
+        <p><strong>Client Impersonation Features:</strong></p>
+        <ul>
+            <li>🎯 Start impersonation sessions with specific permissions</li>
+            <li>⏱️ Configurable session duration (1-480 minutes)</li>
+            <li>🔒 Comprehensive audit logging of all impersonation activities</li>
+            <li>📊 Session management and monitoring</li>
+            <li>🛡️ Permission-based access control</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🚀 Start Impersonation Session</h3>
+        
+        <div class="form-group">
+            <label>Client ID:</label>
+            <input type="text" id="client-id" placeholder="Enter client ID" value="test-client-123">
+        </div>
+        
+        <div class="form-group">
+            <label>User ID:</label>
+            <input type="text" id="user-id" placeholder="Enter user ID to impersonate" value="test-user-456">
+        </div>
+        
+        <div class="form-group">
+            <label>Reason:</label>
+            <select id="reason">
+                <option value="technical_support">Technical Support</option>
+                <option value="bug_investigation">Bug Investigation</option>
+                <option value="feature_demonstration">Feature Demonstration</option>
+                <option value="data_recovery">Data Recovery</option>
+                <option value="account_setup">Account Setup</option>
+                <option value="training_support">Training Support</option>
+                <option value="security_investigation">Security Investigation</option>
+                <option value="billing_support">Billing Support</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Duration (minutes):</label>
+            <input type="number" id="duration" min="1" max="480" value="60">
+        </div>
+        
+        <div class="form-group">
+            <label>Permissions:</label>
+            <div class="permissions-grid" id="permissions-grid">
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-projects" value="view_projects" checked>
+                    <label for="perm-view-projects">View Projects</label>
+                </div>
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-teams" value="view_teams" checked>
+                    <label for="perm-view-teams">View Teams</label>
+                </div>
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-tasks" value="view_tasks" checked>
+                    <label for="perm-view-tasks">View Tasks</label>
+                </div>
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-chat" value="view_chat">
+                    <label for="perm-view-chat">View Chat</label>
+                </div>
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-files" value="view_files">
+                    <label for="perm-view-files">View Files</label>
+                </div>
+                <div class="permission-item">
+                    <input type="checkbox" id="perm-view-settings" value="view_settings">
+                    <label for="perm-view-settings">View Settings</label>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="startImpersonation()">🎭 Start Impersonation</button>
+        <button onclick="getRequirements()">📋 Get Requirements</button>
+        
+        <div id="start-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Active Sessions Management</h3>
+        
+        <button onclick="getActiveSessions()">🔍 Get Active Sessions</button>
+        <button onclick="getImpersonationHistory()">📚 Get History</button>
+        <button onclick="cleanupExpiredSessions()">🧹 Cleanup Expired</button>
+        
+        <div id="sessions-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Session Status & Control</h3>
+        
+        <div class="form-group">
+            <label>Session Token:</label>
+            <input type="text" id="status-token" placeholder="Enter session token">
+        </div>
+        
+        <div class="form-group">
+            <label>Session ID (for ending):</label>
+            <input type="text" id="end-session-id" placeholder="Enter session ID to end">
+        </div>
+        
+        <button onclick="checkStatus()">🔍 Check Status</button>
+        <button onclick="endSession()">🛑 End Session</button>
+        
+        <div id="status-result"></div>
+    </div>
+
+    <script>
+        let currentSessions = [];
+
+        async function startImpersonation() {
+            const clientId = document.getElementById('client-id').value;
+            const userId = document.getElementById('user-id').value;
+            const reason = document.getElementById('reason').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            
+            // Get selected permissions
+            const permissions = [];
+            document.querySelectorAll('#permissions-grid input[type="checkbox"]:checked').forEach(checkbox => {
+                permissions.push(checkbox.value);
+            });
+
+            if (!clientId || !userId || permissions.length === 0) {
+                showResult('start-result', 'Please fill in all required fields and select at least one permission', false);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/impersonation/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: clientId,
+                        user_id: userId,
+                        reason,
+                        duration_minutes: duration,
+                        permissions
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store session info for easy access
+                    const session = data.impersonation.session;
+                    currentSessions.push(session);
+                    
+                    // Auto-fill status fields
+                    document.getElementById('status-token').value = data.impersonation.access_token;
+                    document.getElementById('end-session-id').value = session.id;
+                    
+                    showResult('start-result', `
+                        <h4>✅ Impersonation Started Successfully!</h4>
+                        <p><strong>Session ID:</strong> ${session.id}</p>
+                        <p><strong>Access Token:</strong> ${data.impersonation.access_token}</p>
+                        <p><strong>Dashboard URL:</strong> <a href="${data.impersonation.dashboard_url}" target="_blank">${data.impersonation.dashboard_url}</a></p>
+                        <p><strong>Expires At:</strong> ${new Date(data.impersonation.expires_at).toLocaleString()}</p>
+                        <p><strong>Permissions:</strong> ${data.impersonation.permissions.join(', ')}</p>
+                        ${data.impersonation.warnings && data.impersonation.warnings.length > 0 ? 
+                            `<p><strong>⚠️ Warnings:</strong> ${data.impersonation.warnings.join(', ')}</p>` : ''
+                        }
+                    `, true);
+                } else {
+                    showResult('start-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('start-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getRequirements() {
+            try {
+                const response = await fetch('/api/admin/impersonation/start');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('start-result', `
+                        <h4>📋 Impersonation Requirements</h4>
+                        <p><strong>Max Duration:</strong> ${data.requirements.max_duration_minutes} minutes</p>
+                        <p><strong>Default Duration:</strong> ${data.requirements.default_duration_minutes} minutes</p>
+                        <p><strong>Max Concurrent Sessions:</strong> ${data.requirements.max_concurrent_sessions}</p>
+                        <p><strong>Current Active Sessions:</strong> ${data.current_sessions.active_count}</p>
+                        <p><strong>Available Permissions:</strong> ${data.available_permissions.length}</p>
+                        <p><strong>Available Reasons:</strong> ${data.available_reasons.length}</p>
+                    `, true);
+                } else {
+                    showResult('start-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('start-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getActiveSessions() {
+            try {
+                const response = await fetch('/api/admin/impersonation/end');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let sessionsHtml = `
+                        <h4>📊 Active Sessions (${data.active_sessions.length})</h4>
+                        <p><strong>Expired Cleaned:</strong> ${data.summary.expired_cleaned}</p>
+                    `;
+                    
+                    if (data.active_sessions.length > 0) {
+                        data.active_sessions.forEach(session => {
+                            const timeRemaining = Math.max(0, new Date(session.expires_at).getTime() - Date.now());
+                            const minutesRemaining = Math.floor(timeRemaining / 1000 / 60);
+                            
+                            sessionsHtml += `
+                                <div class="session-card session-active">
+                                    <strong>Session:</strong> ${session.id}<br>
+                                    <strong>Client:</strong> ${session.client_name} (${session.client_email})<br>
+                                    <strong>User:</strong> ${session.impersonated_user_name} (${session.impersonated_user_email})<br>
+                                    <strong>Reason:</strong> ${session.reason}<br>
+                                    <strong>Started:</strong> ${new Date(session.started_at).toLocaleString()}<br>
+                                    <strong>Expires:</strong> ${new Date(session.expires_at).toLocaleString()}<br>
+                                    <strong>Time Remaining:</strong> ${minutesRemaining} minutes<br>
+                                    <strong>Permissions:</strong> ${session.permissions.join(', ')}<br>
+                                    <button onclick="endSpecificSession('${session.id}')">🛑 End This Session</button>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        sessionsHtml += '<p>No active sessions found.</p>';
+                    }
+                    
+                    showResult('sessions-result', sessionsHtml, true);
+                } else {
+                    showResult('sessions-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('sessions-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function getImpersonationHistory() {
+            try {
+                const response = await fetch('/api/admin/impersonation/history?limit=10');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const history = data.history;
+                    let historyHtml = `
+                        <h4>📚 Impersonation History (${history.summary.total_sessions} total)</h4>
+                        <p><strong>Active:</strong> ${history.summary.active_sessions} | 
+                           <strong>Expired:</strong> ${history.summary.expired_sessions} | 
+                           <strong>Terminated:</strong> ${history.summary.terminated_sessions}</p>
+                    `;
+                    
+                    if (history.sessions.length > 0) {
+                        history.sessions.forEach(session => {
+                            const statusClass = `session-${session.status}`;
+                            historyHtml += `
+                                <div class="session-card ${statusClass}">
+                                    <strong>Session:</strong> ${session.id} (${session.status.toUpperCase()})<br>
+                                    <strong>Admin:</strong> ${session.admin_name} (${session.admin_email})<br>
+                                    <strong>Client:</strong> ${session.client_name}<br>
+                                    <strong>User:</strong> ${session.impersonated_user_name}<br>
+                                    <strong>Reason:</strong> ${session.reason}<br>
+                                    <strong>Started:</strong> ${new Date(session.started_at).toLocaleString()}<br>
+                                    ${session.ended_at ? `<strong>Ended:</strong> ${new Date(session.ended_at).toLocaleString()}<br>` : ''}
+                                    <strong>Permissions:</strong> ${session.permissions.join(', ')}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        historyHtml += '<p>No impersonation history found.</p>';
+                    }
+                    
+                    showResult('sessions-result', historyHtml, true);
+                } else {
+                    showResult('sessions-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('sessions-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function checkStatus() {
+            const token = document.getElementById('status-token').value;
+            
+            if (!token) {
+                showResult('status-result', 'Please enter a session token', false);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/impersonation/status?token=${encodeURIComponent(token)}&admin_check=true`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.is_impersonating) {
+                        const status = data.status;
+                        showResult('status-result', `
+                            <h4>✅ Active Impersonation Session</h4>
+                            <p><strong>Session ID:</strong> ${status.session.id}</p>
+                            <p><strong>Admin:</strong> ${status.original_admin.name} (${status.original_admin.email})</p>
+                            <p><strong>Impersonating:</strong> ${status.impersonated_user.name} (${status.impersonated_user.email})</p>
+                            <p><strong>Client:</strong> ${status.impersonated_user.client_name}</p>
+                            <p><strong>Time Remaining:</strong> ${status.time_remaining} minutes</p>
+                            <p><strong>Permissions:</strong> ${status.permissions.join(', ')}</p>
+                            <p><strong>Reason:</strong> ${status.session.reason}</p>
+                        `, true);
+                    } else {
+                        showResult('status-result', data.message || 'No active impersonation session', false);
+                    }
+                } else {
+                    showResult('status-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('status-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        async function endSession() {
+            const sessionId = document.getElementById('end-session-id').value;
+            
+            if (!sessionId) {
+                showResult('status-result', 'Please enter a session ID', false);
+                return;
+            }
+
+            await endSpecificSession(sessionId);
+        }
+
+        async function endSpecificSession(sessionId) {
+            try {
+                const response = await fetch('/api/admin/impersonation/end', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        reason: 'Manual termination via test interface'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('status-result', `
+                        <h4>✅ Session Ended Successfully</h4>
+                        <p><strong>Session ID:</strong> ${data.session_id}</p>
+                        <p><strong>Ended At:</strong> ${new Date(data.ended_at).toLocaleString()}</p>
+                        <p><strong>Ended By:</strong> ${data.ended_by.admin_name} (${data.ended_by.admin_email})</p>
+                    `, true);
+                    
+                    // Refresh active sessions
+                    getActiveSessions();
+                } else {
+                    showResult('status-result', `Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                showResult('status-result', `Network Error: ${error.message}`, false);
+            }
+        }
+
+        function showResult(elementId, content, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+            element.innerHTML = content;
+        }
+
+        // Auto-refresh active sessions every 30 seconds
+        setInterval(() => {
+            if (document.getElementById('sessions-result').innerHTML.includes('Active Sessions')) {
+                getActiveSessions();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

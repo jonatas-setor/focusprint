@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login - FocuSprint</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .credentials {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Test Login</h1>
+            <p>Test jonatas@focusprint.com Login</p>
+        </div>
+
+        <div class="content">
+            <h3>Credentials to Test:</h3>
+            <div class="credentials">
+📧 Email: jonatas@focusprint.com
+🔑 Password: FocuSprint2024!
+🌐 URL: http://localhost:3001/admin/login
+            </div>
+
+            <button class="btn" onclick="testLogin()">🧪 Test Login (POST)</button>
+            <button class="btn" onclick="openLoginPage()">🔗 Open Login Page</button>
+            <button class="btn" onclick="clearResults()">🧹 Clear Results</button>
+
+            <div id="results" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(data, isError = false) {
+            const container = document.getElementById('results');
+            container.style.display = 'block';
+            container.className = `result ${isError ? 'error' : 'success'}`;
+            container.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        function clearResults() {
+            const container = document.getElementById('results');
+            container.style.display = 'none';
+            container.textContent = '';
+        }
+
+        async function testLogin() {
+            try {
+                showResult('🔄 Testing login...', false);
+                
+                const response = await fetch('/api/admin/setup/test-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'login_success') {
+                    const successMessage = `
+🎉 LOGIN TEST SUCCESSFUL!
+
+✅ Authentication: PASSED
+✅ Admin Profile: FOUND
+✅ Permissions: ${data.admin_profile.permissions.length} permissions
+✅ Domain Validation: ${data.domain_validation.is_valid_domain ? 'PASSED' : 'FAILED'}
+
+👤 User Info:
+- Email: ${data.auth_result.email}
+- User ID: ${data.auth_result.user_id}
+- Email Confirmed: ${data.auth_result.email_confirmed}
+- Last Sign In: ${data.auth_result.last_sign_in || 'Never'}
+
+🔐 Admin Profile:
+- Name: ${data.admin_profile.name}
+- Role: ${data.admin_profile.role}
+- Department: ${data.admin_profile.department}
+- Permissions: ${data.admin_profile.permissions.join(', ')}
+
+🌐 Domain Check:
+- Email Domain: ${data.domain_validation.email_domain}
+- Valid Domain: ${data.domain_validation.is_valid_domain}
+
+🎯 CONCLUSION: ${data.conclusion}
+
+🔑 LOGIN CREDENTIALS:
+Email: ${data.login_info.email}
+Password: ${data.login_info.password}
+URL: ${data.login_info.login_url}
+                    `;
+                    showResult(successMessage, false);
+                } else {
+                    showResult(data, true);
+                }
+            } catch (error) {
+                showResult(`❌ Error testing login: ${error.message}`, true);
+            }
+        }
+
+        function openLoginPage() {
+            window.open('http://localhost:3001/admin/login', '_blank');
+        }
+
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔐 Login Test Page Loaded');
+            setTimeout(testLogin, 1000);
+        });
+    </script>
+</body>
+</html>

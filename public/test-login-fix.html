@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocuSprint - Login Redirect Loop Fix Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #e74c3c;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .btn.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #e74c3c;
+        }
+
+        .card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.success { background: #27ae60; }
+        .status-indicator.error { background: #e74c3c; }
+        .status-indicator.warning { background: #f39c12; }
+        .status-indicator.info { background: #3498db; }
+
+        .fix-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .fix-badge.fixed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .fix-badge.testing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Login Redirect Loop Fix</h1>
+            <p>Platform Admin - Session Management Fix Validation</p>
+            <p><strong>Critical Bug Fix: Infinite Login Redirect Loop</strong></p>
+        </div>
+
+        <div class="content">
+            <!-- Problem Analysis -->
+            <div class="section">
+                <h3>🚨 Problem Identified</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4><span class="status-indicator error"></span>Root Cause</h4>
+                        <p><strong>SessionTimeoutService Integration Issue:</strong></p>
+                        <ul>
+                            <li>Login page didn't create session in SessionTimeoutService</li>
+                            <li>Middleware expected existing session for validation</li>
+                            <li>Missing session → redirect to login → infinite loop</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4><span class="status-indicator warning"></span>Symptoms</h4>
+                        <p><strong>User Experience:</strong></p>
+                        <ul>
+                            <li>Successful login → redirect to /admin</li>
+                            <li>Middleware check → no session found</li>
+                            <li>Redirect to /admin/login?reason=session_expired</li>
+                            <li>Infinite loop preventing admin access</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Solution Implemented -->
+            <div class="section">
+                <h3>✅ Solution Implemented</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4><span class="status-indicator success"></span>Fix #1: Login Page <span class="fix-badge fixed">FIXED</span></h4>
+                        <p><strong>Added SessionTimeoutService.createSession() after successful login:</strong></p>
+                        <div class="code-block">
+// CRITICAL FIX: Create session in SessionTimeoutService
+SessionTimeoutService.createSession(data.user.id, data.user.email || '');
+console.log('🕐 Session created for admin login:', data.user.email);
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4><span class="status-indicator success"></span>Fix #2: Middleware <span class="fix-badge fixed">FIXED</span></h4>
+                        <p><strong>Added automatic session creation for authenticated users:</strong></p>
+                        <div class="code-block">
+// Check if session exists - if not, create it (handles fresh logins)
+let session = SessionTimeoutService.getSession(user.id)
+if (!session) {
+  session = SessionTimeoutService.createSession(user.id, user.email || '')
+  console.log('🕐 Created new session for authenticated user:', user.email)
+}
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h4><span class="status-indicator success"></span>Fix #3: Logout API <span class="fix-badge fixed">FIXED</span></h4>
+                        <p><strong>Added proper session cleanup on logout:</strong></p>
+                        <div class="code-block">
+// Clean up session in SessionTimeoutService
+SessionTimeoutService.invalidateSession(user.id);
+// Sign out from Supabase
+await supabase.auth.signOut();
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Instructions -->
+            <div class="section">
+                <h3>🧪 Testing Instructions</h3>
+                <div class="card">
+                    <h4>Manual Testing Steps:</h4>
+                    <ol>
+                        <li><strong>Clear Browser Data:</strong> Clear cookies and local storage</li>
+                        <li><strong>Access Admin:</strong> Go to <code>http://localhost:3001/admin</code></li>
+                        <li><strong>Login:</strong> Use <code>atendimento.setor@gmail.com</code> with password</li>
+                        <li><strong>Verify Redirect:</strong> Should redirect to admin dashboard (not login)</li>
+                        <li><strong>Test Session:</strong> Refresh page - should stay in admin area</li>
+                        <li><strong>Test Timeout:</strong> Wait 30+ minutes or use session API to expire</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- API Testing -->
+            <div class="section">
+                <h3>🔧 API Testing Tools</h3>
+                <button class="btn" onclick="testSessionStatus()">Check Session Status</button>
+                <button class="btn warning" onclick="testSessionExtend()">Extend Session</button>
+                <button class="btn danger" onclick="testLogout()">Test Logout API</button>
+                <button class="btn" onclick="testSessionMonitor()">Monitor All Sessions</button>
+                <button class="btn success" onclick="clearResults()">Clear Results</button>
+                
+                <div id="api-results" class="result" style="display: none;"></div>
+            </div>
+
+            <!-- Expected Behavior -->
+            <div class="section">
+                <h3>🎯 Expected Behavior After Fix</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4><span class="status-indicator success"></span>Successful Login Flow</h4>
+                        <ol>
+                            <li>User enters credentials on /admin/login</li>
+                            <li>Supabase authentication succeeds</li>
+                            <li>SessionTimeoutService creates 30-minute session</li>
+                            <li>Redirect to /admin dashboard</li>
+                            <li>Middleware finds valid session → access granted</li>
+                        </ol>
+                    </div>
+                    <div class="card">
+                        <h4><span class="status-indicator info"></span>Session Management</h4>
+                        <ul>
+                            <li>✅ 30-minute timeout as per PRD requirements</li>
+                            <li>✅ Activity resets timer automatically</li>
+                            <li>✅ Warning 5 minutes before expiry</li>
+                            <li>✅ Proper cleanup on logout</li>
+                            <li>✅ No more infinite redirect loops</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Details -->
+            <div class="section">
+                <h3>🔍 Technical Details</h3>
+                <div class="card">
+                    <h4>Files Modified:</h4>
+                    <ul>
+                        <li><code>/src/app/(platform-admin)/admin/login/page.tsx</code> - Added session creation</li>
+                        <li><code>/src/middleware.ts</code> - Added automatic session creation for authenticated users</li>
+                        <li><code>/src/app/api/admin/auth/logout/route.ts</code> - New logout endpoint with cleanup</li>
+                    </ul>
+                    
+                    <h4>Key Changes:</h4>
+                    <ul>
+                        <li>✅ Login page now creates SessionTimeoutService session</li>
+                        <li>✅ Middleware creates session if user is authenticated but no session exists</li>
+                        <li>✅ Proper session cleanup on logout</li>
+                        <li>✅ Maintains 30-minute timeout requirement</li>
+                        <li>✅ Preserves all existing security features</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(data, isError = false) {
+            const container = document.getElementById('api-results');
+            container.style.display = 'block';
+            container.className = `result ${isError ? 'error' : 'success'}`;
+            container.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        function clearResults() {
+            const container = document.getElementById('api-results');
+            container.style.display = 'none';
+            container.textContent = '';
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testSessionStatus() {
+            const result = await apiCall('/api/admin/session/status');
+            showResult(result);
+        }
+
+        async function testSessionExtend() {
+            const result = await apiCall('/api/admin/session/status', {
+                method: 'POST'
+            });
+            showResult(result);
+        }
+
+        async function testLogout() {
+            const result = await apiCall('/api/admin/auth/logout', {
+                method: 'POST'
+            });
+            showResult(result);
+        }
+
+        async function testSessionMonitor() {
+            const result = await apiCall('/api/admin/session/monitor');
+            showResult(result);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Login Redirect Loop Fix Test Interface Loaded');
+            console.log('🚨 Testing critical session management bug fix');
+        });
+    </script>
+</body>
+</html>

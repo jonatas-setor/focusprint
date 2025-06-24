@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Cliente - FocuSprint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .col {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Cadastrar Novo Cliente</h1>
+            <p>Platform Admin - Gestão de Clientes</p>
+        </div>
+
+        <div class="content">
+            <form id="clientForm">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Nome da Empresa *</label>
+                            <input type="text" id="name" required placeholder="Ex: Empresa ABC Ltda">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="email">Email Principal *</label>
+                            <input type="email" id="email" required placeholder="contato@empresa.com">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="cnpj">CNPJ</label>
+                            <input type="text" id="cnpj" placeholder="00.000.000/0001-00">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="phone">Telefone</label>
+                            <input type="text" id="phone" placeholder="+55 11 99999-9999">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Endereço</label>
+                    <input type="text" id="address" placeholder="Rua, número, bairro, cidade, estado">
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="plan">Plano *</label>
+                            <select id="plan" required>
+                                <option value="">Selecione um plano</option>
+                                <option value="free">Free (Gratuito)</option>
+                                <option value="pro">Pro (R$ 97/mês)</option>
+                                <option value="business">Business (R$ 399/mês)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status">
+                                <option value="active">Ativo</option>
+                                <option value="inactive">Inativo</option>
+                                <option value="trial">Trial</option>
+                                <option value="suspended">Suspenso</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn success">🏢 Cadastrar Cliente</button>
+                    <button type="button" class="btn" onclick="clearForm()">🧹 Limpar</button>
+                    <button type="button" class="btn" onclick="loadClients()">📋 Listar Clientes</button>
+                </div>
+            </form>
+
+            <div id="results" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(data, isError = false) {
+            const container = document.getElementById('results');
+            container.style.display = 'block';
+            container.className = `result ${isError ? 'error' : 'success'}`;
+            container.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        function clearForm() {
+            document.getElementById('clientForm').reset();
+            document.getElementById('results').style.display = 'none';
+        }
+
+        async function loadClients() {
+            try {
+                const response = await fetch('/api/admin/clients');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`📋 CLIENTES CADASTRADOS:\n\n${JSON.stringify(data, null, 2)}`);
+                } else {
+                    showResult(`❌ Erro ao carregar clientes: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Erro: ${error.message}`, true);
+            }
+        }
+
+        document.getElementById('clientForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                cnpj: document.getElementById('cnpj').value || null,
+                phone: document.getElementById('phone').value || null,
+                address: document.getElementById('address').value || null,
+                plan: document.getElementById('plan').value,
+                status: document.getElementById('status').value || 'active'
+            };
+
+            try {
+                showResult('🔄 Cadastrando cliente...', false);
+                
+                const response = await fetch('/api/admin/clients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const successMessage = `🎉 CLIENTE CADASTRADO COM SUCESSO!
+
+📊 Dados do Cliente:
+- ID: ${data.client.id}
+- Nome: ${data.client.name}
+- Email: ${data.client.email}
+- CNPJ: ${data.client.cnpj || 'Não informado'}
+- Telefone: ${data.client.phone || 'Não informado'}
+- Plano: ${data.client.plan}
+- Status: ${data.client.status}
+- Criado em: ${data.client.created_at}
+
+✅ Cliente criado com sucesso no sistema!
+✅ Licença automática criada
+✅ Pronto para uso
+
+🔗 Próximos passos:
+1. Configurar usuários do cliente
+2. Definir permissões específicas
+3. Configurar integrações se necessário`;
+                    
+                    showResult(successMessage);
+                    
+                    // Limpar formulário após sucesso
+                    setTimeout(() => {
+                        clearForm();
+                    }, 3000);
+                } else {
+                    showResult(`❌ Erro ao cadastrar cliente: ${data.error}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Erro: ${error.message}`, true);
+            }
+        });
+
+        // Auto-load clients on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏢 Página de cadastro de cliente carregada');
+        });
+    </script>
+</body>
+</html>

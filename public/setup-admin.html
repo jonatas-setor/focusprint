@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocuSprint - Admin Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+        }
+
+        .section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .btn.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+            margin-bottom: 20px;
+        }
+
+        .card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.success { background: #27ae60; }
+        .status-indicator.error { background: #e74c3c; }
+        .status-indicator.warning { background: #f39c12; }
+        .status-indicator.info { background: #3498db; }
+
+        .credentials {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Admin Setup</h1>
+            <p>Platform Admin - Create New Admin User</p>
+            <p><strong>Setup jonatas@focusprint.com Account</strong></p>
+        </div>
+
+        <div class="content">
+            <!-- Current Status -->
+            <div class="section">
+                <h3>📊 Current Status</h3>
+                <div class="card">
+                    <h4><span class="status-indicator info"></span>Domain Configuration</h4>
+                    <p><strong>Allowed Domain:</strong> @focusprint.com</p>
+                    <p><strong>Target Account:</strong> jonatas@focusprint.com</p>
+                </div>
+                <button class="btn" onclick="checkAdminStatus()">Check Admin Status</button>
+            </div>
+
+            <!-- Create Admin -->
+            <div class="section">
+                <h3>➕ Create New Admin User</h3>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" value="jonatas@focusprint.com" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" value="Jonatas">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" value="Lopes">
+                </div>
+                <div class="form-group">
+                    <label for="password">Temporary Password:</label>
+                    <input type="password" id="password" value="FocuSprint2024!">
+                </div>
+                <button class="btn success" onclick="createAdminUser()">Create Admin User</button>
+            </div>
+
+            <!-- Instructions -->
+            <div class="section">
+                <h3>📋 Instructions</h3>
+                <div class="card">
+                    <h4>After Creating the Admin Account:</h4>
+                    <ol>
+                        <li><strong>Login:</strong> Go to <code>http://localhost:3001/admin/login</code></li>
+                        <li><strong>Use Credentials:</strong> jonatas@focusprint.com / FocuSprint2024!</li>
+                        <li><strong>Change Password:</strong> Update password after first login</li>
+                        <li><strong>Test Features:</strong> Verify all Platform Admin features work</li>
+                        <li><strong>Security:</strong> Only @focusprint.com domain emails are authorized</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Test Access -->
+            <div class="section">
+                <h3>🧪 Test Platform Admin Access</h3>
+                <button class="btn" onclick="testAdminLogin()">Test Admin Login Page</button>
+                <button class="btn" onclick="testClientManagement()">Test Client Management</button>
+                <button class="btn" onclick="testPlansManagement()">Test Plans Management</button>
+                <button class="btn warning" onclick="clearResults()">Clear Results</button>
+            </div>
+
+            <div id="results" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(data, isError = false) {
+            const container = document.getElementById('results');
+            container.style.display = 'block';
+            container.className = `result ${isError ? 'error' : 'success'}`;
+            container.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        }
+
+        function clearResults() {
+            const container = document.getElementById('results');
+            container.style.display = 'none';
+            container.textContent = '';
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function checkAdminStatus() {
+            const result = await apiCall('/api/admin/setup/create-admin');
+            showResult(result);
+        }
+
+        async function createAdminUser() {
+            const email = document.getElementById('email').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const password = document.getElementById('password').value;
+
+            if (!firstName || !lastName || !password) {
+                showResult('Please fill in all fields', true);
+                return;
+            }
+
+            const result = await apiCall('/api/admin/setup/create-admin', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email,
+                    firstName,
+                    lastName,
+                    password
+                })
+            });
+
+            showResult(result);
+
+            if (result.success) {
+                // Show success message with credentials
+                setTimeout(() => {
+                    const successMessage = `
+🎉 SUCCESS! Admin user created successfully!
+
+📧 Email: ${result.data.user.email}
+👤 Name: ${result.data.user.name}
+🔐 Role: ${result.data.user.role}
+✅ Status: ${result.data.user.status}
+
+🔑 LOGIN CREDENTIALS:
+Email: ${result.data.login_info.email}
+Password: ${result.data.login_info.password}
+URL: ${result.data.login_info.login_url}
+
+⚠️ NEXT STEPS:
+1. Login with the credentials above
+2. Change the password after first login
+3. Test all Platform Admin features
+4. Remove temporary access when ready
+                    `;
+                    showResult(successMessage);
+                }, 1000);
+            }
+        }
+
+        async function testAdminLogin() {
+            window.open('http://localhost:3001/admin/login', '_blank');
+        }
+
+        async function testClientManagement() {
+            window.open('http://localhost:3001/test-client-management.html', '_blank');
+        }
+
+        async function testPlansManagement() {
+            window.open('http://localhost:3001/test-plans-management.html', '_blank');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Admin Setup Interface Loaded');
+            console.log('📧 Target Email: jonatas@focusprint.com');
+            
+            // Auto-check status on load
+            setTimeout(checkAdminStatus, 1000);
+        });
+    </script>
+</body>
+</html>
