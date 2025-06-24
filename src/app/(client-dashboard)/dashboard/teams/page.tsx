@@ -21,6 +21,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { TeamsList } from '@/components/client/teams/teams-list';
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function TeamsPage() {
   return (
     <div className="space-y-6">

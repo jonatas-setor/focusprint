@@ -5,6 +5,9 @@ import { ClientList } from '@/components/admin/clients/client-list';
 import { ClientForm } from '@/components/admin/clients/client-form';
 import { Client } from '@/types/database';
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AdminClientsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);

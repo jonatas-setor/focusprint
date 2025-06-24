@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { isValidAdminDomain, logAdminAccessAttempt } from '@/lib/auth/domain-validation-frontend';
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

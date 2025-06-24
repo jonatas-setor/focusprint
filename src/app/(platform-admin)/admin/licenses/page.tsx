@@ -31,6 +31,9 @@ const statusColors = {
   cancelled: 'bg-gray-100 text-gray-800'
 };
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function LicensesPage() {
   const [licenses, setLicenses] = useState<License[]>([]);
   const [stats, setStats] = useState<LicenseStats>({

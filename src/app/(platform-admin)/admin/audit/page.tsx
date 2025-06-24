@@ -30,6 +30,9 @@ interface AuditStatistics {
   top_admins: Array<{ admin: string; count: number }>;
 }
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AuditLogPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [statistics, setStatistics] = useState<AuditStatistics | null>(null);

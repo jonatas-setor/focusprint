@@ -35,6 +35,9 @@ interface Team {
   created_by: string;
 }
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function TeamDetailsPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [team, setTeam] = useState<Team | null>(null);

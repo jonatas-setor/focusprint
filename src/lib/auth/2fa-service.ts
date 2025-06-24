@@ -1,6 +1,6 @@
-const speakeasy = require('speakeasy');
-const QRCode = require('qrcode');
-const CryptoJS = require('crypto-js');
+import speakeasy from 'speakeasy';
+import QRCode from 'qrcode';
+import CryptoJS from 'crypto-js';
 
 // 2FA Configuration
 const APP_NAME = 'FocuSprint Admin';

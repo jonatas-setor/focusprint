@@ -29,6 +29,9 @@ const mockMetrics = {
   ]
 };
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function MetricsPage() {
   return (
     <div className="space-y-6">

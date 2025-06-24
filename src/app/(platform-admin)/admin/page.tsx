@@ -14,6 +14,9 @@ import { RecentSubscriptions } from '@/components/admin/stripe/recent-subscripti
 import { StripeBalance } from '@/components/admin/stripe/stripe-balance';
 import { StripeSyncPanel } from '@/components/admin/stripe/stripe-sync-panel';
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AdminDashboard() {
   return (
     <div className="space-y-6">

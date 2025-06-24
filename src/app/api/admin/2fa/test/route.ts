@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // Test speakeasy
     try {
-      const speakeasy = require('speakeasy');
+      const speakeasy = await import('speakeasy');
       const secret = speakeasy.generateSecret({
         name: 'Test',
         issuer: 'FocuSprint',
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // Test qrcode
     try {
-      const QRCode = require('qrcode');
+      const QRCode = await import('qrcode');
       const testUrl = await QRCode.toDataURL('test');
       results.dependencies.qrcode = {
         status: 'OK',
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     // Test crypto-js
     try {
-      const CryptoJS = require('crypto-js');
+      const CryptoJS = await import('crypto-js');
       const encrypted = CryptoJS.AES.encrypt('test', 'key').toString();
       const decrypted = CryptoJS.AES.decrypt(encrypted, 'key').toString(CryptoJS.enc.Utf8);
       results.dependencies.cryptojs = {

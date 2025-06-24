@@ -23,6 +23,9 @@ const TEAM_COLORS = [
   '#6B7280', // Gray
 ];
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function NewTeamPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

@@ -25,6 +25,9 @@ interface TwoFactorInfo {
   canSetup2FA: boolean;
 }
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AdminProfilePage() {
   const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
   const [twoFactorInfo, setTwoFactorInfo] = useState<TwoFactorInfo | null>(null);
