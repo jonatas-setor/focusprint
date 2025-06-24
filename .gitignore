@@ -1,0 +1,10 @@
+# Next.js
+.next
+node_modules
+
+# Outros arquivos comuns
+.env
+.DS_Store
+*.log.next/cache/
+node_modules/
+*.node
