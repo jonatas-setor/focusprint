@@ -17,8 +17,6 @@ const nextConfig: NextConfig = {
   // Optimize for production
   poweredByHeader: false,
   reactStrictMode: true,
-  // Ensure compatibility with Vercel
-  output: 'standalone',
 };
 
 export default nextConfig;
