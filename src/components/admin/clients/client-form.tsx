@@ -91,32 +91,85 @@ export function ClientForm({ client, open, onOpenChange, onSuccess }: ClientForm
     }
   }, [open, client]);
 
+  const validateField = (field: keyof FormData, value: string): string | undefined => {
+    switch (field) {
+      case 'name':
+        if (!value.trim()) {
+          return 'Nome é obrigatório';
+        }
+        if (value.length < 2) {
+          return 'Nome deve ter pelo menos 2 caracteres';
+        }
+        if (value.length > 100) {
+          return 'Nome deve ter no máximo 100 caracteres';
+        }
+        if (!/^[a-zA-Z0-9\s\-_.&]+$/.test(value)) {
+          return 'Nome contém caracteres inválidos';
+        }
+        break;
+
+      case 'email':
+        if (!value.trim()) {
+          return 'Email é obrigatório';
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return 'Email inválido';
+        }
+        if (value.length > 255) {
+          return 'Email deve ter no máximo 255 caracteres';
+        }
+        break;
+
+      case 'cnpj':
+        if (value && value.trim() !== '') {
+          const cleanCnpj = value.replace(/\D/g, '');
+          if (cleanCnpj.length > 0 && cleanCnpj.length < 14) {
+            return 'CNPJ deve ter 14 dígitos';
+          }
+          if (cleanCnpj.length === 14 && !validateCNPJ(value)) {
+            return 'CNPJ inválido. Verifique os dígitos verificadores';
+          }
+        }
+        break;
+
+      case 'phone':
+        if (value && value.trim() !== '') {
+          const cleanPhone = value.replace(/\D/g, '');
+          if (cleanPhone.length > 0 && cleanPhone.length < 10) {
+            return 'Telefone deve ter pelo menos 10 dígitos';
+          }
+          if (cleanPhone.length > 15) {
+            return 'Telefone deve ter no máximo 15 dígitos';
+          }
+          if (!validatePhone(value)) {
+            return 'Telefone inválido. Use o formato: +55 (XX) XXXXX-XXXX';
+          }
+        }
+        break;
+
+      case 'address':
+        if (value && value.length > 500) {
+          return 'Endereço deve ter no máximo 500 caracteres';
+        }
+        break;
+
+      default:
+        break;
+    }
+    return undefined;
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    // CNPJ validation (optional field)
-    if (formData.cnpj && formData.cnpj.trim() !== '') {
-      if (!validateCNPJ(formData.cnpj)) {
-        newErrors.cnpj = 'CNPJ inválido. Use o formato: XX.XXX.XXX/XXXX-XX';
+    // Validate all fields
+    Object.keys(formData).forEach((key) => {
+      const field = key as keyof FormData;
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
       }
-    }
-
-    // Phone validation (optional field)
-    if (formData.phone && formData.phone.trim() !== '') {
-      if (!validatePhone(formData.phone)) {
-        newErrors.phone = 'Telefone inválido. Use o formato: +55 (XX) XXXXX-XXXX';
-      }
-    }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -161,19 +214,25 @@ export function ClientForm({ client, open, onOpenChange, onSuccess }: ClientForm
   };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    // Apply formatting
+    // Apply formatting for specific fields
+    let formattedValue = value;
     if (field === 'cnpj') {
-      value = formatCNPJ(value);
+      formattedValue = formatCNPJ(value);
     } else if (field === 'phone') {
-      value = formatPhone(value);
+      formattedValue = formatPhone(value);
     }
 
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: formattedValue }));
 
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
+    // Real-time validation for better UX
+    const error = validateField(field, formattedValue);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const handleBlur = (field: keyof FormData) => {
+    // Validate on blur for immediate feedback
+    const error = validateField(field, formData[field]);
+    setErrors(prev => ({ ...prev, [field]: error }));
   };
 
   const selectedPlanLimits = PLAN_LIMITS[formData.plan_type];

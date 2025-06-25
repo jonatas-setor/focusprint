@@ -274,8 +274,7 @@ export async function PUT(
       ).catch(auditError => console.error('Audit logging failed:', auditError));
     }
 
-    // Log the update
-    console.log(`👥 Client updated: ${updatedClient.name} by ${authResult.user.email}`);
+
 
     return NextResponse.json({
       client: updatedClient,
@@ -362,7 +361,7 @@ export async function DELETE(
       );
     }
 
-    console.log(`👥 Starting deletion process for client: ${client.name} (${clientId})`);
+
 
     // STEP 1: Create comprehensive backup (PRD requirement)
     const backupResult = await ClientBackupService.createClientBackup(
@@ -400,9 +399,6 @@ export async function DELETE(
     }
 
     // STEP 3: Delete client from database
-    console.log(`👥 Client backup verified. Proceeding with deletion...`);
-    console.log(`👥 Backup ID: ${backupResult.backup_id}`);
-    console.log(`👥 Backup size: ${(backupResult.data_size_bytes! / 1024).toFixed(2)} KB`);
 
     // Actually delete the client from the database
     const { error: deleteError } = await supabase
@@ -440,9 +436,7 @@ export async function DELETE(
       request
     ).catch(auditError => console.error('Audit logging failed:', auditError));
 
-    // Log the deletion
-    console.log(`👥 Client deleted: ${client.name} by ${authResult.user.email}`);
-    console.log(`👥 Deletion reason: ${reason || 'No reason provided'}`);
+
 
     return NextResponse.json({
       message: 'Client deleted successfully with complete backup',

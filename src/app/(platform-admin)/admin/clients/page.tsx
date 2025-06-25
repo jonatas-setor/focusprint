@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ClientList } from '@/components/admin/clients/client-list';
 import { ClientForm } from '@/components/admin/clients/client-form';
 import { Client } from '@/types/database';
@@ -9,6 +10,7 @@ import { Client } from '@/types/database';
 export const dynamic = 'force-dynamic';
 
 export default function AdminClientsPage() {
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -24,9 +26,7 @@ export default function AdminClientsPage() {
   };
 
   const handleViewClient = (client: Client) => {
-    // For now, just edit the client
-    // Later we can implement a detailed view modal
-    handleEditClient(client);
+    router.push(`/admin/clients/${client.id}`);
   };
 
   const handleFormSuccess = () => {

@@ -101,6 +101,9 @@ export interface Client {
   max_users: number
   max_projects: number
   stripe_customer_id: string | null
+  cnpj: string | null
+  phone: string | null
+  address: string | null
   created_at: string | null
   updated_at: string | null
 }
@@ -114,6 +117,9 @@ export interface ClientInsert {
   max_users?: number
   max_projects?: number
   stripe_customer_id?: string | null
+  cnpj?: string | null
+  phone?: string | null
+  address?: string | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -127,6 +133,9 @@ export interface ClientUpdate {
   max_users?: number
   max_projects?: number
   stripe_customer_id?: string | null
+  cnpj?: string | null
+  phone?: string | null
+  address?: string | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -261,18 +270,7 @@ export interface LicenseUpdate {
 }
 
 // Client Data Types (será implementado na Semana 2)
-export interface Client {
-  id: string
-  name: string
-  email: string
-  status: 'active' | 'inactive' | 'suspended'
-  plan_type: 'free' | 'pro' | 'business'
-  max_users: number
-  max_projects: number
-  stripe_customer_id?: string
-  created_at: string
-  updated_at: string
-}
+// Note: Client interface is defined above in the main types section
 
 export interface ClientProfile {
   id: string

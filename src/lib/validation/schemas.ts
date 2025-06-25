@@ -59,6 +59,24 @@ export const updateClientSchema = z.object({
   email: emailSchema.optional(),
   plan_type: planTypeSchema.optional(),
   status: statusSchema.optional(),
+  cnpj: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === '') return true; // Optional field
+      return validateCNPJ(val);
+    }, { message: 'CNPJ inválido. Use o formato: XX.XXX.XXX/XXXX-XX' }),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === '') return true; // Optional field
+      return validatePhone(val);
+    }, { message: 'Telefone inválido. Use o formato: +55 (XX) XXXXX-XXXX' }),
+  address: z
+    .string()
+    .max(500, 'Address must be less than 500 characters')
+    .optional(),
 }).refine(
   (data) => Object.keys(data).length > 0,
   { message: 'At least one field must be provided for update' }
