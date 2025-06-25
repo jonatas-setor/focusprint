@@ -1,17 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has TypeScript errors.
     ignoreBuildErrors: true,
   },
+  // Optimize for Vercel deployment
+  serverExternalPackages: ['@supabase/supabase-js'],
+  // Ensure proper handling of environment variables
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tuyeqoudkeufkxtkupuh.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+  },
+  // Optimize for production
+  poweredByHeader: false,
+  reactStrictMode: true,
+  // Ensure compatibility with Vercel
+  output: 'standalone',
 };
 
 export default nextConfig;

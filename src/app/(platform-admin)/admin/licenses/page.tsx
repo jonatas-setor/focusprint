@@ -8,7 +8,8 @@ import { LicenseService, License } from '@/lib/licenses/service';
 import LicenseForm from '@/components/admin/licenses/license-form';
 import LicenseActions from '@/components/admin/licenses/license-actions';
 
-// Note: metadata export removed since this is now a client component
+// Note: metadata cannot be exported from client components
+// Metadata is handled by the layout or parent server component
 
 interface LicenseStats {
   total: number;
@@ -31,7 +32,7 @@ const statusColors = {
   cancelled: 'bg-gray-100 text-gray-800'
 };
 
-// Disable static generation for this page
+// Force dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic';
 
 export default function LicensesPage() {

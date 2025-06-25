@@ -6,11 +6,20 @@ import { SessionTimeoutService } from '@/lib/auth/session-timeout'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Create Supabase client for middleware
+  // Create Supabase client for middleware with fallbacks
   const response = NextResponse.next()
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tuyeqoudkeufkxtkupuh.supabase.co'
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+
+  // Skip middleware if environment variables are not properly set (build time)
+  if (supabaseUrl === 'placeholder-anon-key' || supabaseAnonKey === 'placeholder-anon-key') {
+    return response
+  }
+
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {

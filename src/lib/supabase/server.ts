@@ -5,9 +5,31 @@ import { Database } from '@/types/database'
 export const createClient = async () => {
   const cookieStore = await cookies()
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Handle missing environment variables during build
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase environment variables not found. Using placeholder values for build.');
+    return createServerClient<Database>(
+      'https://placeholder.supabase.co',
+      'placeholder-anon-key',
+      {
+        cookies: {
+          getAll() {
+            return []
+          },
+          setAll() {
+            // No-op during build
+          },
+        },
+      }
+    );
+  }
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -34,9 +56,31 @@ export const createClient = async () => {
 
 // Cliente com service role para operações administrativas
 export const createAdminClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  // Handle missing environment variables during build
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn('Supabase admin environment variables not found. Using placeholder values for build.');
+    return createServerClient<Database>(
+      'https://placeholder.supabase.co',
+      'placeholder-service-key',
+      {
+        cookies: {
+          getAll() {
+            return []
+          },
+          setAll() {
+            // No-op for service role client
+          },
+        },
+      }
+    );
+  }
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    supabaseServiceKey,
     {
       cookies: {
         getAll() {
