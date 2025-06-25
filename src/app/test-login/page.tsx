@@ -68,7 +68,7 @@ export default function TestLoginPage() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/test-login`
+          redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/test-login`
         }
       });
 
@@ -224,10 +224,10 @@ export default function TestLoginPage() {
           <h2 className="text-xl font-semibold mb-4">Informações do Ambiente</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <strong>URL atual:</strong> {window.location.href}
+              <strong>URL atual:</strong> {typeof window !== 'undefined' ? window.location.href : 'N/A (SSR)'}
             </div>
             <div>
-              <strong>Origin:</strong> {window.location.origin}
+              <strong>Origin:</strong> {typeof window !== 'undefined' ? window.location.origin : 'N/A (SSR)'}
             </div>
             <div>
               <strong>Supabase URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_URL}
