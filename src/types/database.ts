@@ -12,6 +12,11 @@ export interface Database {
         Insert: PlanInsert
         Update: PlanUpdate
       }
+      setup_fee_history: {
+        Row: SetupFeeHistory
+        Insert: SetupFeeHistoryInsert
+        Update: SetupFeeHistoryUpdate
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -189,6 +194,12 @@ export interface Plan {
   price: number
   currency: string
   interval: string
+  annual_price_cents?: number | null
+  annual_discount_percent?: number | null
+  has_annual_discount?: boolean
+  setup_fee_cents?: number | null
+  trial_days?: number | null
+  price_per_additional_user_cents?: number | null
   features: Record<string, any>
   limits: Record<string, any>
   is_active: boolean
@@ -205,6 +216,12 @@ export interface PlanInsert {
   price: number
   currency?: string
   interval?: string
+  annual_price_cents?: number | null
+  annual_discount_percent?: number | null
+  has_annual_discount?: boolean
+  setup_fee_cents?: number | null
+  trial_days?: number | null
+  price_per_additional_user_cents?: number | null
   features?: Record<string, any>
   limits?: Record<string, any>
   is_active?: boolean
@@ -221,6 +238,9 @@ export interface PlanUpdate {
   price?: number
   currency?: string
   interval?: string
+  setup_fee_cents?: number | null
+  trial_days?: number | null
+  price_per_additional_user_cents?: number | null
   features?: Record<string, any>
   limits?: Record<string, any>
   is_active?: boolean
@@ -238,6 +258,7 @@ export interface License {
   start_date: string | null
   end_date: string | null
   trial_ends_at: string | null
+  current_users: number
   metadata: Record<string, any> | null
   created_at: string | null
   updated_at: string | null
@@ -251,6 +272,7 @@ export interface LicenseInsert {
   start_date?: string | null
   end_date?: string | null
   trial_ends_at?: string | null
+  current_users?: number
   metadata?: Record<string, any> | null
   created_at?: string | null
   updated_at?: string | null
@@ -264,6 +286,7 @@ export interface LicenseUpdate {
   start_date?: string | null
   end_date?: string | null
   trial_ends_at?: string | null
+  current_users?: number
   metadata?: Record<string, any> | null
   created_at?: string | null
   updated_at?: string | null
@@ -283,4 +306,44 @@ export interface ClientProfile {
   google_refresh_token?: string
   created_at: string
   updated_at: string
+}
+
+// Setup Fee History Types
+export interface SetupFeeHistory {
+  id: string
+  client_id: string | null
+  plan_id: string | null
+  setup_fee_amount: number
+  currency: string
+  stripe_payment_intent_id: string | null
+  status: 'pending' | 'paid' | 'failed' | 'refunded'
+  paid_at: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface SetupFeeHistoryInsert {
+  id?: string
+  client_id?: string | null
+  plan_id?: string | null
+  setup_fee_amount: number
+  currency?: string
+  stripe_payment_intent_id?: string | null
+  status?: 'pending' | 'paid' | 'failed' | 'refunded'
+  paid_at?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface SetupFeeHistoryUpdate {
+  id?: string
+  client_id?: string | null
+  plan_id?: string | null
+  setup_fee_amount?: number
+  currency?: string
+  stripe_payment_intent_id?: string | null
+  status?: 'pending' | 'paid' | 'failed' | 'refunded'
+  paid_at?: string | null
+  created_at?: string | null
+  updated_at?: string | null
 }

@@ -48,6 +48,8 @@ export interface PlanPricing {
   currency: string; // BRL, USD, EUR
   monthly_price_cents: number; // Price in cents
   annual_price_cents?: number; // Annual price with discount
+  annual_discount_percent?: number; // Annual discount percentage (e.g., 20 for 20%)
+  has_annual_discount?: boolean; // Whether annual discount is available
   setup_fee_cents?: number; // One-time setup fee
   trial_days?: number; // Free trial period
   billing_cycle: BillingCycle;
@@ -279,12 +281,18 @@ export const DEFAULT_PLANS = {
     name: 'pro',
     display_name: 'Pro',
     pricing: { monthly_price_cents: 9700, currency: 'BRL', billing_cycle: 'monthly' as BillingCycle },
-    limits: { max_users: 5, max_projects: -1, storage_gb: 1 }
+    limits: { max_users: 15, max_projects: -1, storage_gb: 5 }
   },
   BUSINESS: {
     name: 'business',
     display_name: 'Business',
     pricing: { monthly_price_cents: 39900, currency: 'BRL', billing_cycle: 'monthly' as BillingCycle },
-    limits: { max_users: 30, max_projects: -1, storage_gb: 10 }
+    limits: { max_users: 50, max_projects: -1, storage_gb: 20 }
+  },
+  ENTERPRISE: {
+    name: 'enterprise',
+    display_name: 'Enterprise',
+    pricing: { monthly_price_cents: 0, currency: 'BRL', billing_cycle: 'monthly' as BillingCycle }, // Custom pricing
+    limits: { max_users: -1, max_projects: -1, storage_gb: -1 }
   }
 } as const;

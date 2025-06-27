@@ -26,6 +26,11 @@ const navigationItems = [
     icon: '💼'
   },
   {
+    name: 'Usuários Adicionais',
+    href: '/admin/billing/additional-users',
+    icon: '👥+'
+  },
+  {
     name: 'Métricas',
     href: '/admin/metrics',
     icon: '📈'

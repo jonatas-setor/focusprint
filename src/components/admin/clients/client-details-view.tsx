@@ -446,6 +446,12 @@ export function ClientDetailsView({ clientId }: ClientDetailsViewProps) {
                   <span className="text-sm font-medium">Limite de Projetos:</span>
                   <span className="text-sm">{client.max_projects}</span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Taxa de Setup:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Verificar no histórico de pagamentos
+                  </span>
+                </div>
                 {client.stripe_customer_id && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Stripe ID:</span>

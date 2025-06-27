@@ -122,6 +122,8 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteAdmin = async (admin: AdminUser) => {
+    // This will be updated to use the confirmation dialog
+    // For now, keeping the existing implementation
     if (!confirm(`Tem certeza que deseja excluir o administrador ${admin.first_name} ${admin.last_name}?`)) {
       return;
     }

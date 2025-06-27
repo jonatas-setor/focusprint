@@ -193,22 +193,26 @@ export async function POST(
       );
     }
 
-    // Check current user count against limits
-    const { count: currentUserCount } = await supabase
-      .from('client_profiles')
-      .select('user_id', { count: 'exact' })
-      .eq('client_id', clientId);
+    // Validate user limit using the new billing system
+    const { UserCountHooks } = await import('@/lib/billing/user-count-hooks');
+    const validation = await UserCountHooks.validateUserLimit(clientId);
 
-    if ((currentUserCount || 0) >= client.max_users) {
+    if (!validation.canAddUser) {
       return NextResponse.json(
-        { 
-          error: `Client has reached maximum user limit (${client.max_users} users for ${client.plan_type} plan)`,
-          current_users: currentUserCount,
-          max_users: client.max_users,
+        {
+          error: validation.reason || 'Cannot add user',
+          current_users: validation.currentUsers,
+          max_users: validation.maxUsers,
           plan_type: client.plan_type
         },
         { status: 400 }
       );
+    }
+
+    // Get billing preview if this will incur additional costs
+    let billingPreview = null;
+    if (validation.additionalUserCost) {
+      billingPreview = await UserCountHooks.getBillingPreview(clientId);
     }
 
     // Check if user already exists
@@ -305,6 +309,14 @@ export async function POST(
       ip_address: request.headers.get('x-forwarded-for') || 'unknown'
     }, request);
 
+    // Update license user count
+    try {
+      await UserCountHooks.onUserAdded(clientId, userId);
+    } catch (error) {
+      console.warn('Failed to update license user count:', error);
+      // Don't fail the request for this
+    }
+
     return NextResponse.json({
       message: isNewUser ? 'User created and added to client successfully' : 'User added to client successfully',
       user: {
@@ -319,9 +331,10 @@ export async function POST(
       client: {
         id: client.id,
         name: client.name,
-        current_users: (currentUserCount || 0) + 1,
-        max_users: client.max_users
-      }
+        current_users: validation.currentUsers + 1,
+        max_users: validation.maxUsers
+      },
+      billing_preview: billingPreview
     }, { status: 201 });
 
   } catch (error) {

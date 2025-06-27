@@ -148,32 +148,103 @@ export const createPlanSchema = z.object({
     .regex(/^[a-z_]+$/, 'Plan code must be lowercase letters and underscores only'),
   description: z
     .string()
-    .max(500, 'Description must be less than 500 characters')
-    .optional(),
+    .min(1, 'Description is required')
+    .max(500, 'Description must be less than 500 characters'),
   price: z
     .number()
     .min(0, 'Price must be non-negative')
     .max(999999.99, 'Price must be less than 1,000,000'),
-  max_users: z
+  currency: z
+    .string()
+    .length(3, 'Currency must be 3 characters')
+    .default('BRL'),
+  interval: z
+    .enum(['month', 'year'])
+    .default('month'),
+  annual_price_cents: z
     .number()
-    .int('Max users must be an integer')
-    .min(1, 'Max users must be at least 1')
-    .max(1000, 'Max users must be less than 1000'),
-  max_projects: z
+    .int('Annual price must be an integer')
+    .min(0, 'Annual price must be non-negative')
+    .optional(),
+  annual_discount_percent: z
     .number()
-    .int('Max projects must be an integer')
-    .min(1, 'Max projects must be at least 1')
-    .max(1000, 'Max projects must be less than 1000'),
+    .min(0.01, 'Annual discount must be greater than 0%')
+    .max(50, 'Annual discount cannot exceed 50%')
+    .optional(),
+  has_annual_discount: z
+    .boolean()
+    .default(false),
+  setup_fee_cents: z
+    .number()
+    .int('Setup fee must be an integer')
+    .min(0, 'Setup fee must be non-negative')
+    .optional(),
+  trial_days: z
+    .number()
+    .int('Trial days must be an integer')
+    .min(0, 'Trial days must be non-negative')
+    .max(365, 'Trial days cannot exceed 365')
+    .default(0),
   features: z
-    .array(z.string())
+    .record(z.boolean())
     .optional()
-    .default([]),
+    .default({}),
+  limits: z.object({
+    max_users: z
+      .number()
+      .int('Max users must be an integer')
+      .min(1, 'Max users must be at least 1')
+      .max(1000, 'Max users must be less than 1000'),
+    max_projects: z
+      .number()
+      .int('Max projects must be an integer')
+      .min(-1, 'Max projects must be -1 (unlimited) or positive')
+      .max(1000, 'Max projects must be less than 1000'),
+    storage_gb: z
+      .number()
+      .min(0.1, 'Storage must be at least 0.1 GB')
+      .max(1000, 'Storage must be less than 1000 GB')
+  }).optional(),
+  is_active: z
+    .boolean()
+    .default(true),
+  version: z
+    .number()
+    .int()
+    .min(1)
+    .default(1),
+  is_promotional: z
+    .boolean()
+    .default(false),
+  promo_start_date: z
+    .string()
+    .datetime()
+    .optional(),
+  promo_end_date: z
+    .string()
+    .datetime()
+    .optional(),
+  promo_discount_percent: z
+    .number()
+    .min(0.01, 'Discount percent must be greater than 0')
+    .max(100, 'Discount percent cannot exceed 100')
+    .optional(),
+  promo_discount_amount: z
+    .number()
+    .min(0.01, 'Discount amount must be greater than 0')
+    .optional(),
+  promo_code: z
+    .string()
+    .min(3, 'Promo code must be at least 3 characters')
+    .max(50, 'Promo code must be less than 50 characters')
+    .optional()
 });
 
 export const updatePlanSchema = z.object({
   name: nameSchema.optional(),
   description: z
     .string()
+    .min(1, 'Description cannot be empty')
     .max(500, 'Description must be less than 500 characters')
     .optional(),
   price: z
@@ -181,21 +252,87 @@ export const updatePlanSchema = z.object({
     .min(0, 'Price must be non-negative')
     .max(999999.99, 'Price must be less than 1,000,000')
     .optional(),
-  max_users: z
-    .number()
-    .int('Max users must be an integer')
-    .min(1, 'Max users must be at least 1')
-    .max(1000, 'Max users must be less than 1000')
+  currency: z
+    .string()
+    .length(3, 'Currency must be 3 characters')
     .optional(),
-  max_projects: z
+  interval: z
+    .enum(['month', 'year'])
+    .optional(),
+  annual_price_cents: z
     .number()
-    .int('Max projects must be an integer')
-    .min(1, 'Max projects must be at least 1')
-    .max(1000, 'Max projects must be less than 1000')
+    .int('Annual price must be an integer')
+    .min(0, 'Annual price must be non-negative')
+    .optional(),
+  annual_discount_percent: z
+    .number()
+    .min(0.01, 'Annual discount must be greater than 0%')
+    .max(50, 'Annual discount cannot exceed 50%')
+    .optional(),
+  has_annual_discount: z
+    .boolean()
+    .optional(),
+  setup_fee_cents: z
+    .number()
+    .int('Setup fee must be an integer')
+    .min(0, 'Setup fee must be non-negative')
+    .optional(),
+  trial_days: z
+    .number()
+    .int('Trial days must be an integer')
+    .min(0, 'Trial days must be non-negative')
+    .max(365, 'Trial days cannot exceed 365')
     .optional(),
   features: z
-    .array(z.string())
+    .record(z.boolean())
     .optional(),
+  limits: z.object({
+    max_users: z
+      .number()
+      .int('Max users must be an integer')
+      .min(1, 'Max users must be at least 1')
+      .max(1000, 'Max users must be less than 1000')
+      .optional(),
+    max_projects: z
+      .number()
+      .int('Max projects must be an integer')
+      .min(-1, 'Max projects must be -1 (unlimited) or positive')
+      .max(1000, 'Max projects must be less than 1000')
+      .optional(),
+    storage_gb: z
+      .number()
+      .min(0.1, 'Storage must be at least 0.1 GB')
+      .max(1000, 'Storage must be less than 1000 GB')
+      .optional()
+  }).optional(),
+  is_active: z
+    .boolean()
+    .optional(),
+  is_promotional: z
+    .boolean()
+    .optional(),
+  promo_start_date: z
+    .string()
+    .datetime()
+    .optional(),
+  promo_end_date: z
+    .string()
+    .datetime()
+    .optional(),
+  promo_discount_percent: z
+    .number()
+    .min(0.01, 'Discount percent must be greater than 0')
+    .max(100, 'Discount percent cannot exceed 100')
+    .optional(),
+  promo_discount_amount: z
+    .number()
+    .min(0.01, 'Discount amount must be greater than 0')
+    .optional(),
+  promo_code: z
+    .string()
+    .min(3, 'Promo code must be at least 3 characters')
+    .max(50, 'Promo code must be less than 50 characters')
+    .optional()
 }).refine(
   (data) => Object.keys(data).length > 0,
   { message: 'At least one field must be provided for update' }

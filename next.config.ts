@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
   // Optimize for production
   poweredByHeader: false,
   reactStrictMode: true,
+  // Disable development indicators
+  devIndicators: {
+    buildActivity: false,
+    buildActivityPosition: 'bottom-right',
+  },
 };
 
 export default nextConfig;

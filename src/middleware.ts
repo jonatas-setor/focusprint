@@ -35,8 +35,8 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Platform Admin routes
-  if (pathname.startsWith('/admin')) {
+  // Platform Admin routes (both pages and APIs)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     return adminMiddleware(request, response, supabase)
   }
 
@@ -60,6 +60,7 @@ async function adminMiddleware(
   supabase: ReturnType<typeof createServerClient<Database>>
 ) {
   const { pathname } = request.nextUrl
+  const isApiRoute = pathname.startsWith('/api/admin')
 
   // Allow access to session timeout API (login is handled outside admin routes)
   if (pathname.startsWith('/api/admin/session/')) {
@@ -71,14 +72,20 @@ async function adminMiddleware(
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
-      // Not authenticated - redirect to login
+      // Not authenticated
+      if (isApiRoute) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
       const loginUrl = new URL('/admin-login', request.url)
       return NextResponse.redirect(loginUrl)
     }
 
     // Check if email is from authorized domain
     if (!user.email || !user.email.endsWith('@focusprint.com')) {
-      // Not a platform admin - redirect to login with error
+      // Not a platform admin
+      if (isApiRoute) {
+        return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
+      }
       const loginUrl = new URL('/admin-login', request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -91,7 +98,10 @@ async function adminMiddleware(
       .single()
 
     if (profileError || !adminProfile) {
-      // No admin profile - redirect to login
+      // No admin profile
+      if (isApiRoute) {
+        return NextResponse.json({ error: 'Forbidden - Admin profile required' }, { status: 403 })
+      }
       const loginUrl = new URL('/admin-login', request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -108,6 +118,9 @@ async function adminMiddleware(
     if (!SessionTimeoutService.isSessionValid(user.id)) {
       // Session expired - invalidate and redirect to login
       SessionTimeoutService.invalidateSession(user.id)
+      if (isApiRoute) {
+        return NextResponse.json({ error: 'Session expired' }, { status: 401 })
+      }
       const loginUrl = new URL('/admin-login?reason=session_expired', request.url)
       return NextResponse.redirect(loginUrl)
     }
@@ -119,6 +132,9 @@ async function adminMiddleware(
     return response
 
   } catch (err) {
+    if (isApiRoute) {
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
     const loginUrl = new URL('/admin-login', request.url)
     return NextResponse.redirect(loginUrl)
   }
@@ -150,7 +166,9 @@ async function authMiddleware(
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/api/admin/:path*',
     '/dashboard/:path*',
+    '/api/dashboard/:path*',
     '/auth/:path*'
   ]
 }

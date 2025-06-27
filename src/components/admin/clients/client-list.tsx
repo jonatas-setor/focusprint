@@ -105,22 +105,24 @@ export function ClientList({ onCreateClient, onEditClient, onViewClient }: Clien
   }, [pagination.page, search, statusFilter, planFilter]);
 
   const handleDeleteClient = async (client: Client) => {
+    // This will be updated to use the confirmation dialog
+    // For now, keeping the existing implementation
     if (!confirm(`Are you sure you want to delete ${client.name}? This action cannot be undone.`)) {
       return;
     }
-    
+
     try {
       const response = await fetch(`/api/admin/clients/${client.id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete client');
       }
-      
+
       toast.success('Client deleted successfully');
       fetchClients(); // Refresh the list
-      
+
     } catch (error) {
       console.error('Error deleting client:', error);
       toast.error('Failed to delete client');

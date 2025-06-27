@@ -9,6 +9,12 @@ export interface Plan {
   price: number;
   currency: string;
   interval: string;
+  annual_price_cents?: number | null;
+  annual_discount_percent?: number | null;
+  has_annual_discount?: boolean;
+  setup_fee_cents?: number | null;
+  trial_days?: number;
+  price_per_additional_user_cents?: number | null;
   features: Record<string, any>;
   limits: Record<string, any>;
   is_active: boolean;
@@ -65,7 +71,7 @@ export interface CreateLicenseData {
 
 export interface UpdateLicenseData {
   plan_id?: string;
-  plan_type?: 'free' | 'pro' | 'business';
+  plan_type?: string;
   status?: 'trial' | 'active' | 'suspended' | 'cancelled' | 'expired';
   max_users?: number;
   max_projects?: number;
@@ -73,7 +79,7 @@ export interface UpdateLicenseData {
   start_date?: string;
   end_date?: string;
   auto_renew?: boolean;
-  trial_ends_at?: string;
+  trial_ends_at?: string | null;
   current_period_start?: string;
   current_period_end?: string;
   metadata?: Record<string, any>;
@@ -222,9 +228,11 @@ export class LicenseService {
    * Create new license with plan reference
    */
   static async createLicense(licenseData: CreateLicenseData): Promise<License> {
+    let plan: Plan | null = null;
+
     // If plan_type is provided but not plan_id, resolve plan_id
     if (licenseData.plan_type && !licenseData.plan_id) {
-      const plan = await PlanService.getPlanByCode(licenseData.plan_type);
+      plan = await PlanService.getPlanByCode(licenseData.plan_type);
       licenseData.plan_id = plan.id;
 
       // Set limits from plan if not provided
@@ -234,11 +242,26 @@ export class LicenseService {
       if (!licenseData.max_projects) {
         licenseData.max_projects = plan.limits.max_projects;
       }
+    } else if (licenseData.plan_id && !plan) {
+      // Get plan details if we have plan_id but not plan object
+      plan = await PlanService.getPlanById(licenseData.plan_id);
     }
 
     // Set default dates
     if (!licenseData.start_date) {
       licenseData.start_date = new Date().toISOString().split('T')[0];
+    }
+
+    // Handle trial period logic
+    if (plan && plan.trial_days && plan.trial_days > 0 && !licenseData.trial_ends_at) {
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + plan.trial_days);
+      licenseData.trial_ends_at = trialEndDate.toISOString();
+
+      // Set status to trial if not explicitly set
+      if (!licenseData.status) {
+        licenseData.status = 'trial';
+      }
     }
 
     const { data, error } = await supabase
@@ -367,6 +390,66 @@ export class LicenseService {
       plan_type: newPlan.code,
       max_users: newPlan.limits.max_users,
       max_projects: newPlan.limits.max_projects
+    });
+  }
+
+  /**
+   * Check if trial has expired
+   */
+  static isTrialExpired(license: License): boolean {
+    if (!license.trial_ends_at || license.status !== 'trial') {
+      return false;
+    }
+
+    const trialEndDate = new Date(license.trial_ends_at);
+    const now = new Date();
+
+    return now > trialEndDate;
+  }
+
+  /**
+   * Get trial days remaining
+   */
+  static getTrialDaysRemaining(license: License): number {
+    if (!license.trial_ends_at || license.status !== 'trial') {
+      return 0;
+    }
+
+    const trialEndDate = new Date(license.trial_ends_at);
+    const now = new Date();
+
+    if (now > trialEndDate) {
+      return 0;
+    }
+
+    const diffTime = trialEndDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return Math.max(0, diffDays);
+  }
+
+  /**
+   * Convert trial to active subscription
+   */
+  static async convertTrialToActive(id: string, stripeSubscriptionId?: string): Promise<License> {
+    const updateData: UpdateLicenseData = {
+      status: 'active',
+      trial_ends_at: null
+    };
+
+    if (stripeSubscriptionId) {
+      updateData.stripe_subscription_id = stripeSubscriptionId;
+    }
+
+    return this.updateLicense(id, updateData);
+  }
+
+  /**
+   * Expire trial license
+   */
+  static async expireTrial(id: string): Promise<License> {
+    return this.updateLicense(id, {
+      status: 'expired'
     });
   }
 }
