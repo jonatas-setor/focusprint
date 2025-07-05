@@ -2,7 +2,7 @@
 // Handles billing calculations for users above plan limits
 
 import { createClient } from '@/lib/supabase/server';
-import { PlanService } from '@/lib/plans/service';
+import { PlanService } from '@/lib/licenses/service';
 import { logger } from '@/lib/logger';
 
 export interface AdditionalUsersBilling {
