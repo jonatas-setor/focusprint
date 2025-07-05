@@ -10,12 +10,7 @@
       "maxDuration": 30
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/expire-trials",
-      "schedule": "0 */6 * * *"
-    }
-  ],
+
   "headers": [
     {
       "source": "/api/(.*)",
