@@ -145,6 +145,35 @@ export interface ClientUpdate {
   updated_at?: string | null
 }
 
+// Keyboard Shortcuts Configuration Types
+export interface ShortcutsConfig {
+  enabled: boolean
+  custom_shortcuts: {
+    new_task?: string
+    focus_chat?: string
+    command_palette?: string
+    project_switcher?: string
+    new_project?: string
+    [key: string]: string | undefined
+  }
+  disabled_shortcuts: string[]
+}
+
+export interface UserPreferences {
+  shortcuts_config?: ShortcutsConfig
+  ui_preferences?: {
+    theme?: 'light' | 'dark' | 'system'
+    sidebar_collapsed?: boolean
+    kanban_column_width?: 'small' | 'medium' | 'large'
+  }
+  notification_settings?: {
+    email_notifications?: boolean
+    browser_notifications?: boolean
+    task_assignments?: boolean
+    project_updates?: boolean
+  }
+}
+
 // Client Profile Types
 export interface ClientProfile {
   id: string
@@ -155,6 +184,13 @@ export interface ClientProfile {
   last_name: string
   google_account_connected: boolean | null
   google_refresh_token: string | null
+  preferences: UserPreferences | null
+  timezone: string | null
+  language: string | null
+  avatar_url: string | null
+  job_title: string | null
+  department: string | null
+  last_seen_at: string | null
   created_at: string | null
   updated_at: string | null
 }
@@ -168,6 +204,13 @@ export interface ClientProfileInsert {
   last_name: string
   google_account_connected?: boolean | null
   google_refresh_token?: string | null
+  preferences?: UserPreferences | null
+  timezone?: string | null
+  language?: string | null
+  avatar_url?: string | null
+  job_title?: string | null
+  department?: string | null
+  last_seen_at?: string | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -181,6 +224,13 @@ export interface ClientProfileUpdate {
   last_name?: string
   google_account_connected?: boolean | null
   google_refresh_token?: string | null
+  preferences?: UserPreferences | null
+  timezone?: string | null
+  language?: string | null
+  avatar_url?: string | null
+  job_title?: string | null
+  department?: string | null
+  last_seen_at?: string | null
   created_at?: string | null
   updated_at?: string | null
 }
@@ -294,19 +344,7 @@ export interface LicenseUpdate {
 
 // Client Data Types (será implementado na Semana 2)
 // Note: Client interface is defined above in the main types section
-
-export interface ClientProfile {
-  id: string
-  user_id: string
-  client_id: string
-  role: 'owner' | 'admin' | 'member'
-  first_name: string
-  last_name: string
-  google_account_connected: boolean
-  google_refresh_token?: string
-  created_at: string
-  updated_at: string
-}
+// ClientProfile interface is already defined above with full schema
 
 // Setup Fee History Types
 export interface SetupFeeHistory {

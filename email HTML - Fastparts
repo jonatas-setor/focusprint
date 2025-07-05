@@ -1,0 +1,128 @@
+<!-- Email HTML - Fastparts | UI/UX e Copy Premium -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fastparts - Atualize e Ganhe!</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:'Montserrat',Arial,sans-serif;color:#222;">
+  <table width="100%" bgcolor="#f8fafc" cellpadding="0" cellspacing="0" style="min-height:100vh;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px #e0e7ef;padding:32px 32px 16px 32px;max-width:95vw;">
+          <!-- HEADER / LOGO -->
+          <tr>
+            <td align="center" style="padding-bottom:16px;">
+              <a href="https://www.fastparts.com.br" target="_blank">
+                <img src="https://www.fastparts.com.br/site/uploads/2024/05/Posts-Fastparts-e1750447202661.png" alt="Logo Fastparts - Soluções em Protótipos e Manufatura" title="Fastparts - Materializando suas ideias" width="220" style="display:block;margin:0 auto 8px auto;">
+              </a>
+              <div style="font-size:17px;font-weight:700;letter-spacing:1px;color:#FF6900;">Materializando suas ideias</div>
+            </td>
+          </tr>
+          <!-- LINHA COLORIDA -->
+          <tr>
+            <td style="padding-bottom:24px;">
+              <div style="height:4px;width:100px;background:linear-gradient(90deg,#FF6900,#fd8234,#FF6900);margin:0 auto 0 auto;border-radius:2px;"></div>
+            </td>
+          </tr>
+          <!-- MINI-BANNER DO CADERNO -->
+          <tr>
+            <td align="center" style="padding-bottom:12px;">
+              <img src="https://d15k2d11r6t6rl.cloudfront.net/pub/bfra/9zb9oh5v/en9/zfy/7cs/fastparts-caderno.webp" alt="Caderno Fastparts" width="160" style="border-radius:8px;box-shadow:0 2px 12px #FF690024;display:block;margin:0 auto 0 auto;">
+            </td>
+          </tr>
+          <!-- MENSAGEM PRINCIPAL -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <div style="font-size:20px;font-weight:700;color:#1a2742;margin-bottom:8px;">Olá, [Nome]!</div>
+              <div style="font-size:16px;line-height:1.6;color:#40485a;">
+                Que tal registrar a próxima grande ideia do seu negócio com exclusividade?<br><br>
+                Aqui na <b>Fastparts</b>, temos orgulho de fazer parte das suas jornadas de inovação. Por isso, preparamos algo especial: você está convidado a <b>atualizar seus dados</b> e, de presente, receber nosso <b>Caderno Fastparts</b>, feito para inspirar as mentes mais criativas!<br><br>
+                <b>Esta ação é exclusiva</b> para clientes que já fazem parte da nossa história.<br>
+                <span style="color:#FF6900;font-weight:600;">#meucadernofastparts</span><br><br>
+                É rapidinho! Mantenha seu cadastro atualizado, receba novidades sob medida e garanta já o seu caderno:
+              </div>
+            </td>
+          </tr>
+          <!-- BOTÃO CTA PREMIUM -->
+          <tr>
+            <td align="center" style="padding-bottom:24px;">
+              <a href="[INSERIR_LINK_AQUI]" target="_blank" style="background:linear-gradient(90deg,#FF6900 0%,#fd8234 100%);color:#fff;text-decoration:none;padding:18px 30px;font-size:18px;font-weight:700;border-radius:32px;box-shadow:0 2px 8px #fd82344d;display:inline-block;letter-spacing:1px;width:100%;max-width:340px;text-align:center;">
+                Quero atualizar meus dados e ganhar meu Caderno Fastparts!
+              </a>
+            </td>
+          </tr>
+          <!-- FRASE DE IMPACTO -->
+          <tr>
+            <td align="center" style="padding-bottom:20px;">
+              <div style="font-size:17px;font-weight:600;color:#1a2742;">Campanha por tempo limitado. Não perca essa oportunidade!</div>
+            </td>
+          </tr>
+          <!-- MENSAGEM FINAL -->
+          <tr>
+            <td style="font-size:16px;color:#40485a;text-align:center;padding-bottom:12px;">
+              Conte com a gente para transformar ideias em conquistas.<br>
+              <span style="color:#FF6900;">Fastparts: movendo ideias do papel para o mundo real!</span>
+            </td>
+          </tr>
+          <!-- FAQ/PS -->
+          <tr>
+            <td style="font-size:14px;color:#58636e;text-align:center;padding-bottom:8px;">
+              Ficou com dúvidas? Basta responder este email ou falar com a nossa equipe pelo site.
+            </td>
+          </tr>
+          <!-- ASSINATURA DIGITAL -->
+          <tr>
+            <td style="padding-top:18px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e4e7ed;padding-top:10px;margin-top:8px;">
+                <tr>
+                  <!-- BLOCO NOME/CONTATO -->
+                  <td valign="top" width="60%" style="padding-right:12px;">
+                    <div style="font-size:16px;font-weight:700;letter-spacing:0.3px;color:#0e223d;">Jesse Silva</div>
+                    <div style="font-size:14px;color:#444;">jesse@fastparts.com.br</div>
+                    <div style="font-size:14px;margin:6px 0 0 0;"><b>Cel.:</b> <a href="tel:+5547999712595" style="color:#FF6900;text-decoration:none;">+55 47 99971-2595</a> &nbsp; <img src="https://img.icons8.com/color/18/000000/whatsapp--v1.png" alt="WhatsApp" style="vertical-align:middle"></div>
+                    <div style="font-size:14px;margin:2px 0 0 0;"><b>Tel.:</b> <a href="tel:+554721017777" style="color:#FF6900;text-decoration:none;">+55 47 2101-7777</a> &nbsp; <img src="https://img.icons8.com/ios-filled/16/FF6900/phone.png" alt="Telefone" style="vertical-align:middle"></div>
+                    <div style="font-size:14px;margin-top:2px;"><a href="https://www.fastparts.com.br" style="color:#FF6900;text-decoration:none;">www.fastparts.com.br</a> &nbsp; <img src="https://img.icons8.com/fluency/16/000000/domain.png" alt="Site" style="vertical-align:middle"></div>
+                  </td>
+                  <!-- BLOCO LOGO + QR CODE -->
+                  <td valign="top" width="40%" align="right" style="padding-left:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;">
+                      <img src="https://www.fastparts.com.br/site/uploads/2024/05/Posts-Fastparts-e1750447202661.png" alt="Logo Fastparts" width="64" style="border-radius:7px;">
+                      <img src="https://chart.googleapis.com/chart?chs=90x90&cht=qr&chl=https://fastparts.com.br" alt="Acesse o site da Fastparts" width="48" style="display:inline-block;">
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding-top:6px;font-size:13px;color:#58636e;text-align:left;">
+                    Rua Manoel da Luz Fontes, 33 | Costa e Silva | CEP 89219-220 | Joinville – SC
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="padding-top:10px;">
+                    <div style="font-size:15px;font-weight:700;color:#1a2742;text-align:center;">PMMP</div>
+                    <table width="100%" style="margin-top:2px;text-align:center;font-size:13.5px;color:#FF6900;font-weight:600;letter-spacing:0.2px;">
+                      <tr>
+                        <td>Protótipo</td>
+                        <td>Manufatura Aditiva</td>
+                        <td>Molde</td>
+                        <td>Produção</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <div style="color:#b2bac6;font-size:12px;margin-top:16px;">
+          © Fastparts | Todos os direitos reservados.<br>
+          <a href="[LINK_DESCADASTRO]" style="color:#b2bac6;text-decoration:underline;">Remover inscrição</a> |
+          <a href="https://www.fastparts.com.br/politica-de-privacidade" style="color:#b2bac6;text-decoration:underline;">Política de Privacidade</a>
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -48,6 +48,12 @@ export default function AdminLayout({
                   Planos
                 </a>
                 <a
+                  href="/admin/templates"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                  Templates de Projeto
+                </a>
+                <a
                   href="/admin/billing/additional-users"
                   className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
                 >

@@ -24,12 +24,12 @@ export async function GET(
       );
     }
 
-    const { profile } = authResult;
+    const { profile, isSuperAdmin } = authResult;
     const supabase = await createServerSupabaseClient();
     const teamId = params.id;
 
-    // Get team with members and projects
-    const { data: team, error } = await supabase
+    // Build query for team with members and projects
+    let teamQuery = supabase
       .from('teams')
       .select(`
         *,
@@ -53,9 +53,14 @@ export async function GET(
           end_date
         )
       `)
-      .eq('id', teamId)
-      .eq('client_id', profile.client_id)
-      .single();
+      .eq('id', teamId);
+
+    // If not super admin, filter by client_id
+    if (!isSuperAdmin && profile) {
+      teamQuery = teamQuery.eq('client_id', profile.client_id);
+    }
+
+    const { data: team, error } = await teamQuery.single();
 
     if (error || !team) {
       return NextResponse.json(
@@ -90,7 +95,7 @@ export async function PUT(
       );
     }
 
-    const { profile } = authResult;
+    const { profile, isSuperAdmin } = authResult;
     const supabase = await createServerSupabaseClient();
     const teamId = params.id;
 
@@ -110,13 +115,17 @@ export async function PUT(
 
     const updateData = validationResult.data;
 
-    // Check if team exists and belongs to client
-    const { data: existingTeam, error: fetchError } = await supabase
+    // Check if team exists and belongs to client (if not super admin)
+    let teamQuery = supabase
       .from('teams')
       .select('id, name, created_by')
-      .eq('id', teamId)
-      .eq('client_id', profile.client_id)
-      .single();
+      .eq('id', teamId);
+
+    if (!isSuperAdmin && profile) {
+      teamQuery = teamQuery.eq('client_id', profile.client_id);
+    }
+
+    const { data: existingTeam, error: fetchError } = await teamQuery.single();
 
     if (fetchError || !existingTeam) {
       return NextResponse.json(
@@ -125,10 +134,14 @@ export async function PUT(
       );
     }
 
-    // Check if user has permission to edit (team lead, admin, or owner)
-    const canEdit = profile.role === 'admin' || 
-                   profile.role === 'owner' || 
-                   existingTeam.created_by === profile.user_id;
+    // Check if user has permission to edit
+    let canEdit = isSuperAdmin; // Super admin can always edit
+
+    if (!isSuperAdmin && profile) {
+      canEdit = profile.role === 'admin' ||
+                profile.role === 'owner' ||
+                existingTeam.created_by === profile.user_id;
+    }
 
     if (!canEdit) {
       // Check if user is team lead
@@ -214,17 +227,21 @@ export async function DELETE(
       );
     }
 
-    const { profile } = authResult;
+    const { profile, isSuperAdmin } = authResult;
     const supabase = await createServerSupabaseClient();
     const teamId = params.id;
 
-    // Check if team exists and belongs to client
-    const { data: team, error: fetchError } = await supabase
+    // Check if team exists and belongs to client (if not super admin)
+    let teamQuery = supabase
       .from('teams')
       .select('id, name, created_by')
-      .eq('id', teamId)
-      .eq('client_id', profile.client_id)
-      .single();
+      .eq('id', teamId);
+
+    if (!isSuperAdmin && profile) {
+      teamQuery = teamQuery.eq('client_id', profile.client_id);
+    }
+
+    const { data: team, error: fetchError } = await teamQuery.single();
 
     if (fetchError || !team) {
       return NextResponse.json(

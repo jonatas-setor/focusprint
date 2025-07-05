@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -11,22 +11,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Crown, 
-  Shield, 
-  Users 
+import {
+  User,
+  Settings,
+  LogOut,
+  Crown,
+  Shield,
+  Users
 } from 'lucide-react';
 import { ClientProfile } from '@/lib/auth/server';
 import { createClient } from '@/lib/auth/client-auth';
+import QuickProjectSwitcher from '@/components/client/navigation/quick-project-switcher';
 
 interface ClientHeaderProps {
   profile: ClientProfile;
+  currentProjectId?: string;
 }
 
-export function ClientHeader({ profile }: ClientHeaderProps) {
+export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -94,8 +96,11 @@ export function ClientHeader({ profile }: ClientHeaderProps) {
           </div>
         </div>
 
-        {/* Right side - User menu */}
+        {/* Right side - Project switcher and User menu */}
         <div className="flex items-center space-x-4">
+          {/* Project Switcher */}
+          <QuickProjectSwitcher currentProjectId={currentProjectId} />
+
           {/* User info */}
           <div className="hidden md:block text-right">
             <p className="text-sm font-medium">

@@ -144,23 +144,100 @@ async function clientMiddleware(
   request: NextRequest,
   response: NextResponse
 ) {
-  // TODO: Implementar na Semana 3 - Dia 1-2
-  // Verificar se usuário está associado a cliente
-  // Verificar licença ativa
-  // Redirecionar para /auth/login se não autenticado
+  const { pathname } = request.nextUrl;
 
-  // Por enquanto, permitir acesso para desenvolvimento
-  return response
+  // Create Supabase client for middleware
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  );
+
+  try {
+    // Check if user is authenticated
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      // Not authenticated - redirect to login
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check if email is confirmed
+    if (!user.email_confirmed_at) {
+      // Email not confirmed - redirect to confirmation page
+      const confirmUrl = new URL('/auth/confirm-email', request.url);
+      return NextResponse.redirect(confirmUrl);
+    }
+
+    // TODO: Add client profile validation here
+    // For now, allow any authenticated user with confirmed email
+
+    return response;
+
+  } catch (err) {
+    console.error('Client middleware error:', err);
+    const loginUrl = new URL('/login', request.url);
+    return NextResponse.redirect(loginUrl);
+  }
 }
 
 async function authMiddleware(
   request: NextRequest,
   response: NextResponse
 ) {
-  // TODO: Implementar lógica de autenticação
-  // Redirecionar usuários já autenticados
+  const { pathname } = request.nextUrl;
 
-  return response
+  // Create Supabase client for middleware
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  );
+
+  try {
+    // Check if user is already authenticated
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (!error && user && user.email_confirmed_at) {
+      // User is authenticated and email is confirmed
+      // Redirect to dashboard instead of showing auth pages
+      if (pathname === '/login' || pathname === '/register') {
+        const dashboardUrl = new URL('/dashboard', request.url);
+        return NextResponse.redirect(dashboardUrl);
+      }
+    }
+
+    return response;
+
+  } catch (err) {
+    console.error('Auth middleware error:', err);
+    return response;
+  }
 }
 
 export const config = {

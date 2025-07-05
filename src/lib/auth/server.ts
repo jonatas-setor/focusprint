@@ -111,10 +111,51 @@ export function canPerformAction(
   }
 }
 
+// Check if user is a super admin (platform admin)
+export async function isSuperAdmin(): Promise<boolean> {
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return false;
+    }
+
+    // Check if user has @focusprint.com email (super admin)
+    if (user.email && user.email.endsWith('@focusprint.com')) {
+      // Verify admin profile exists
+      const { data: adminProfile, error: adminError } = await supabase
+        .from('admin_profiles')
+        .select('id, role')
+        .eq('user_id', user.id)
+        .single();
+
+      return !adminError && !!adminProfile;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error checking super admin status:', error);
+    return false;
+  }
+}
+
 // Validate client access for API routes
 export async function validateClientAccess(requiredRole?: 'owner' | 'admin' | 'member') {
+  // First check if user is a super admin
+  const isAdmin = await isSuperAdmin();
+  if (isAdmin) {
+    // Super admins have full access to all client data
+    return {
+      profile: null, // No client profile for super admin
+      isSuperAdmin: true
+    };
+  }
+
+  // Regular client user validation
   const profile = await getCurrentClientProfile();
-  
+
   if (!profile) {
     return { error: 'Unauthorized', status: 401 };
   }
@@ -131,7 +172,7 @@ export async function validateClientAccess(requiredRole?: 'owner' | 'admin' | 'm
     return { error: 'Insufficient permissions', status: 403 };
   }
 
-  return { profile };
+  return { profile, isSuperAdmin: false };
 }
 
 // Admin authentication for server-side API routes with RBAC
