@@ -167,3 +167,17 @@ Opção B - Via Push:
 **Bloqueador principal**: Acesso ao dashboard da Vercel
 
 **Nota**: O projeto está tecnicamente perfeito. O problema é quase certamente configuração de variáveis de ambiente ou cache na Vercel.
+
+## 🚨 ATUALIZAÇÃO CRÍTICA - PROBLEMA IDENTIFICADO
+
+**DESCOBERTA**: Os commits recentes não estão sendo deployados na Vercel!
+- ✅ Último deploy: `3ee9fc4` (10 dias atrás)
+- ❌ Commits não deployados: `70ddb9f3`, `3a333cbd`, `dab8f4ad`, `72fa07e2`
+
+**CAUSA PROVÁVEL**: Webhook GitHub → Vercel desconectado ou com problema.
+
+**SOLUÇÃO URGENTE**:
+1. Vercel Dashboard > Settings > Git
+2. Verificar se GitHub está conectado
+3. Reconectar se necessário
+4. Ou fazer deploy manual via Vercel CLI
