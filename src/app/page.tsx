@@ -1,45 +1,75 @@
-'use client'
-
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = 'force-dynamic'
+import Link from 'next/link'
 
 export default function Home() {
-  const router = useRouter()
-
-  useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (session) {
-          // User is logged in, redirect to dashboard
-          router.push('/dashboard')
-        } else {
-          // User is not logged in, redirect to login
-          router.push('/login')
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error)
-        // On error, redirect to login
-        router.push('/login')
-      }
-    }
-
-    checkAuthAndRedirect()
-  }, [router])
-
-  // Show loading while redirecting
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">FocuSprint</h1>
-        <p className="mt-2 text-sm text-gray-600">Carregando...</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            FocuSprint
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Gestão de Projetos com Kanban + Chat + Videochamadas
+          </p>
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            Plataforma completa que combina quadro Kanban, chat em tempo real e videochamadas
+            em uma interface unificada para máxima produtividade da sua equipe.
+          </p>
+        </div>
+
+        {/* Features */}
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="text-3xl mb-4">🎯</div>
+            <h3 className="text-xl font-semibold mb-2">Kanban Inteligente</h3>
+            <p className="text-gray-600">Gestão visual de tarefas com drag & drop, marcos e progresso em tempo real.</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="text-3xl mb-4">💬</div>
+            <h3 className="text-xl font-semibold mb-2">Chat Integrado</h3>
+            <p className="text-gray-600">Comunicação em tempo real por projeto, sem sair do contexto de trabalho.</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="text-3xl mb-4">📹</div>
+            <h3 className="text-xl font-semibold mb-2">Videochamadas</h3>
+            <p className="text-gray-600">Integração com Google Meet para reuniões rápidas e colaboração visual.</p>
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="text-center space-y-4">
+          <div className="space-x-4">
+            <Link
+              href="/login"
+              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Fazer Login
+            </Link>
+            <Link
+              href="/register"
+              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              Criar Conta
+            </Link>
+          </div>
+
+          <div className="mt-8">
+            <Link
+              href="/admin"
+              className="text-sm text-gray-500 hover:text-gray-700 underline"
+            >
+              Acesso Administrativo
+            </Link>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-16 text-gray-500">
+          <p>&copy; 2024 FocuSprint. Desenvolvido com Next.js + Supabase.</p>
+        </div>
       </div>
     </div>
   )
