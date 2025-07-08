@@ -69,6 +69,10 @@ export default function ClientDashboardLayout({
                   <span className="w-4 h-4 mr-2">📅</span>
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Minha Semana</span>
                 </a>
+                <a href="/dashboard/templates" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary" title="Meus Templates">
+                  <span className="w-4 h-4 mr-2">✨</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Templates</span>
+                </a>
                 <a href="/dashboard/settings" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary" title="Configurações">
                   <span className="w-4 h-4 mr-2">⚙️</span>
                   <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Configurações</span>

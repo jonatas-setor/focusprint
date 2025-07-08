@@ -27,6 +27,12 @@ interface MessageListProps {
   onUpdateMessage: (messageId: string, content: string) => void;
   onDeleteMessage: (messageId: string) => void;
   availableTasks?: { id: string; title: string }[];
+  availableMilestones?: {
+    id: string;
+    name: string;
+    progress_percentage: number;
+    status: string;
+  }[];
 }
 
 export default function MessageList({
@@ -35,7 +41,8 @@ export default function MessageList({
   loading,
   onUpdateMessage,
   onDeleteMessage,
-  availableTasks = []
+  availableTasks = [],
+  availableMilestones = []
 }: MessageListProps) {
   if (loading) {
     return (
@@ -65,7 +72,7 @@ export default function MessageList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex-1 overflow-y-auto touch-scroll p-3 md:p-4 space-y-3 md:space-y-4 mobile-optimized">
       {messages
         .filter((message, index, array) => {
           // Filter out messages without valid IDs or duplicates
@@ -84,6 +91,7 @@ export default function MessageList({
             onUpdate={onUpdateMessage}
             onDelete={onDeleteMessage}
             availableTasks={availableTasks}
+            availableMilestones={availableMilestones}
           />
         ))}
     </div>

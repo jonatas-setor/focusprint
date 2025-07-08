@@ -16,49 +16,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Build query
-    let query = supabase
-      .from('project_templates')
-      .select(`
-        id,
-        name,
-        description,
-        category,
-        template_config,
-        is_active,
-        created_at,
-        updated_at,
-        template_columns:template_columns(
-          id,
-          name,
-          position,
-          color,
-          description
-        ),
-        template_tasks:template_tasks(
-          id,
-          title,
-          description,
-          position,
-          priority,
-          estimated_hours,
-          tags,
-          column_id
-        )
-      `)
-      .order('category')
-      .order('name');
+    // Get query parameters for template type filtering
+    const template_type = searchParams.get('template_type');
 
-    // Apply filters
-    if (active_only) {
-      query = query.eq('is_active', true);
-    }
-    
-    if (category) {
-      query = query.eq('category', category);
-    }
-
-    const { data: templates, error } = await query;
+    // Use the new RPC function to get accessible templates
+    const { data: templates, error } = await supabase
+      .rpc('get_user_accessible_templates', {
+        p_category: category,
+        p_template_type: template_type,
+        p_active_only: active_only
+      });
 
     if (error) {
       console.error('Error fetching templates:', error);
@@ -68,22 +35,42 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Transform data to include task counts and column counts
-    const templatesWithStats = templates?.map(template => ({
-      ...template,
-      stats: {
-        column_count: template.template_columns?.length || 0,
-        task_count: template.template_tasks?.length || 0,
-        estimated_total_hours: template.template_tasks?.reduce(
-          (sum: number, task: any) => sum + (task.estimated_hours || 0), 
-          0
-        ) || 0
-      }
-    }));
+    // For each template, fetch detailed columns and tasks
+    const templatesWithDetails = await Promise.all(
+      (templates || []).map(async (template) => {
+        // Fetch columns
+        const { data: columns } = await supabase
+          .from('template_columns')
+          .select('id, name, position, color, description, limit_wip')
+          .eq('template_id', template.id)
+          .order('position');
+
+        // Fetch tasks
+        const { data: tasks } = await supabase
+          .from('template_tasks')
+          .select('id, title, description, position, priority, estimated_hours, tags, column_id, due_date_offset, assigned_to_role')
+          .eq('template_id', template.id)
+          .order('position');
+
+        return {
+          ...template,
+          template_columns: columns || [],
+          template_tasks: tasks || [],
+          stats: {
+            column_count: template.column_count,
+            task_count: template.task_count,
+            estimated_total_hours: (tasks || []).reduce(
+              (sum: number, task: any) => sum + (task.estimated_hours || 0),
+              0
+            )
+          }
+        };
+      })
+    );
 
     return NextResponse.json({
-      templates: templatesWithStats,
-      total: templatesWithStats?.length || 0
+      templates: templatesWithDetails,
+      total: templatesWithDetails.length
     });
 
   } catch (error) {
@@ -131,13 +118,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call RPC function to create template
+    // Call RPC function to create global template (admin only)
     const { data: templateId, error } = await supabase
-      .rpc('create_template', {
+      .rpc('create_personal_template', {
         p_name: name,
         p_description: description || null,
         p_category: category,
+        p_template_type: 'global',
         p_template_config: template_config || {},
+        p_created_by: user.id,
+        p_client_id: null,
+        p_team_id: null,
         p_columns: columns || [],
         p_tasks: tasks || []
       });

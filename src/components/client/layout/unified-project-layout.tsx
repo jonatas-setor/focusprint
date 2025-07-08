@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { MessageSquare, Kanban, Menu, X } from 'lucide-react';
+import { MessageSquare, Kanban, Menu, X, Sparkles } from 'lucide-react';
 import KanbanBoard from '@/components/client/kanban/kanban-board';
 import ProjectChat from '@/components/client/chat/project-chat';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useCommandPalette } from '@/hooks/use-command-palette';
 import CommandPalette from '@/components/client/shared/command-palette';
+import { useSwipeGestures, useMobileNavigation, useMobileKeyboard } from '@/hooks/use-mobile-navigation';
+import SaveAsTemplateModal from '@/components/client/projects/save-as-template-modal';
 import { toast } from 'sonner';
 
 interface UnifiedLayoutProps {
@@ -34,13 +36,86 @@ interface Task {
   created_at: string;
 }
 
+interface Milestone {
+  id: string;
+  name: string;
+  progress_percentage: number;
+  status: string;
+}
+
 export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) {
+  // Removed excessive logging to prevent console spam
+
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeView, setActiveView] = useState<'kanban' | 'chat'>('kanban');
+  const [chatCollapsed, setChatCollapsed] = useState(false);
+  const [saveAsTemplateLoading, setSaveAsTemplateLoading] = useState(false);
+  const [saveAsTemplateModalOpen, setSaveAsTemplateModalOpen] = useState(false);
+
+  // Mobile navigation hooks - temporarily disabled to debug infinite loop
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+  const isKeyboardOpen = false;
+  const keyboardHeight = 0;
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setIsTablet(width >= 768 && width < 1024);
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  // Function to handle saving project as template
+  const handleSaveAsTemplate = () => {
+    if (!project) return;
+
+    console.log('🎨 [SAVE AS TEMPLATE] Opening template creation modal for project:', {
+      projectId: project.id,
+      projectName: project.name
+    });
+
+    setSaveAsTemplateModalOpen(true);
+  };
+
+  const handleSaveAsTemplateSuccess = () => {
+    setSaveAsTemplateModalOpen(false);
+    // Optionally refresh project data or show additional feedback
+  };
+
+  // Swipe gesture handlers for mobile navigation - memoized to prevent infinite loops
+  const handleSwipeLeft = useCallback(() => {
+    setActiveView(prev => {
+      if (prev === 'kanban') {
+        toast.success('Mudou para Chat');
+        return 'chat';
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleSwipeRight = useCallback(() => {
+    setActiveView(prev => {
+      if (prev === 'chat') {
+        toast.success('Mudou para Kanban');
+        return 'kanban';
+      }
+      return prev;
+    });
+  }, []);
+
+  // Temporarily disabled swipe handlers to debug infinite loop
+  const swipeHandlers = useMemo(() => {
+    return {};
+  }, []);
 
   // Refs for focusing elements
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -86,106 +161,121 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
   // Keyboard shortcuts integration
   const shortcuts = useKeyboardShortcuts();
 
-  useEffect(() => {
-    // Check if mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // Device detection is now handled by useMobileNavigation hook
 
   // Memoize command palette open handler to prevent recreation
   const commandPaletteOpen = useCallback(() => {
     commandPalette.open();
   }, [commandPalette.open]);
 
-  // Register keyboard shortcuts
-  useEffect(() => {
-    // Register project-specific shortcuts
-    shortcuts.registerShortcut({
-      id: 'new_task',
-      description: 'Criar nova tarefa',
-      category: 'tasks',
-      defaultKey: 'Ctrl+T',
-      handler: handleNewTask,
-      context: 'project',
-      preventDefault: true,
-    });
+  // Temporarily disabled keyboard shortcuts to debug infinite loop
+  // useEffect(() => {
+  //   // Register project-specific shortcuts
+  //   shortcuts.registerShortcut({
+  //     id: 'new_task',
+  //     description: 'Criar nova tarefa',
+  //     category: 'tasks',
+  //     defaultKey: 'Ctrl+T',
+  //     handler: handleNewTask,
+  //     context: 'project',
+  //     preventDefault: true,
+  //   });
 
-    shortcuts.registerShortcut({
-      id: 'focus_chat',
-      description: 'Focar no chat',
-      category: 'chat',
-      defaultKey: 'Ctrl+M',
-      handler: handleFocusChat,
-      context: 'project',
-      preventDefault: true,
-    });
+  //   shortcuts.registerShortcut({
+  //     id: 'focus_chat',
+  //     description: 'Focar no chat',
+  //     category: 'chat',
+  //     defaultKey: 'Ctrl+M',
+  //     handler: handleFocusChat,
+  //     context: 'project',
+  //     preventDefault: true,
+  //   });
 
-    shortcuts.registerShortcut({
-      id: 'command_palette',
-      description: 'Abrir paleta de comandos',
-      category: 'general',
-      defaultKey: 'Ctrl+K',
-      handler: commandPaletteOpen,
-      context: 'project',
-      preventDefault: true,
-    });
+  //   shortcuts.registerShortcut({
+  //     id: 'command_palette',
+  //     description: 'Abrir paleta de comandos',
+  //     category: 'general',
+  //     defaultKey: 'Ctrl+K',
+  //     handler: commandPaletteOpen,
+  //     context: 'project',
+  //     preventDefault: true,
+  //   });
 
-    shortcuts.registerShortcut({
-      id: 'help',
-      description: 'Mostrar ajuda',
-      category: 'general',
-      defaultKey: 'Ctrl+?',
-      handler: handleShowHelp,
-      context: 'project',
-      preventDefault: true,
-    });
+  //   shortcuts.registerShortcut({
+  //     id: 'help',
+  //     description: 'Mostrar ajuda',
+  //     category: 'general',
+  //     defaultKey: 'Ctrl+?',
+  //     handler: handleShowHelp,
+  //     context: 'project',
+  //     preventDefault: true,
+  //   });
 
-    // Cleanup shortcuts when component unmounts
-    return () => {
-      shortcuts.unregisterShortcut('new_task');
-      shortcuts.unregisterShortcut('focus_chat');
-      shortcuts.unregisterShortcut('command_palette');
-      shortcuts.unregisterShortcut('help');
-    };
-  }, [shortcuts, handleNewTask, handleFocusChat, handleShowHelp, commandPaletteOpen]);
+  //   // Cleanup shortcuts when component unmounts
+  //   return () => {
+  //     shortcuts.unregisterShortcut('new_task');
+  //     shortcuts.unregisterShortcut('focus_chat');
+  //     shortcuts.unregisterShortcut('command_palette');
+  //     shortcuts.unregisterShortcut('help');
+  //   };
+  // }, [shortcuts, handleNewTask, handleFocusChat, handleShowHelp, commandPaletteOpen]);
 
   const loadProject = useCallback(async () => {
+    console.log('🚀 [UNIFIED LAYOUT] loadProject started for projectId:', projectId);
     try {
       setLoading(true);
       setError('');
 
-      // Load project and tasks in parallel
-      const [projectResponse, tasksResponse] = await Promise.all([
+      console.log('📡 [UNIFIED LAYOUT] Making parallel API calls...');
+      // Load project, tasks, and milestones in parallel
+      const [projectResponse, tasksResponse, milestonesResponse] = await Promise.all([
         fetch(`/api/client/projects/${projectId}`),
-        fetch(`/api/client/projects/${projectId}/tasks`)
+        fetch(`/api/client/projects/${projectId}/tasks`),
+        fetch(`/api/client/projects/${projectId}/milestones`)
       ]);
 
+      console.log('📊 [UNIFIED LAYOUT] API responses:', {
+        project: projectResponse.status,
+        tasks: tasksResponse.status,
+        milestones: milestonesResponse.status
+      });
+
       if (!projectResponse.ok) {
+        console.error('❌ [UNIFIED LAYOUT] Project API failed:', projectResponse.status);
         const projectData = await projectResponse.json();
         throw new Error(projectData.error || 'Failed to load project');
       }
 
       const projectData = await projectResponse.json();
       setProject(projectData.project);
+      console.log('✅ [UNIFIED LAYOUT] Project loaded:', projectData.project?.name);
 
       // Load tasks if available (don't fail if tasks can't be loaded)
       if (tasksResponse.ok) {
         const tasksData = await tasksResponse.json();
         setTasks(tasksData.tasks || []);
+        console.log('✅ [UNIFIED LAYOUT] Tasks loaded:', tasksData.tasks?.length || 0);
       } else {
-        console.warn('Failed to load tasks for task references');
+        console.warn('⚠️ [UNIFIED LAYOUT] Failed to load tasks for task references');
         setTasks([]);
       }
+
+      // Load milestones if available (don't fail if milestones can't be loaded)
+      if (milestonesResponse.ok) {
+        const milestonesData = await milestonesResponse.json();
+        setMilestones(milestonesData.milestones || []);
+        console.log('✅ [UNIFIED LAYOUT] Milestones loaded:', milestonesData.milestones?.length || 0);
+      } else {
+        console.warn('⚠️ [UNIFIED LAYOUT] Failed to load milestones for milestone references');
+        setMilestones([]);
+      }
     } catch (err) {
-      console.error('Error loading project:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load project');
+      console.error('❌ [UNIFIED LAYOUT] Error loading project:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load project';
+      setError(errorMessage);
+      console.error('❌ [UNIFIED LAYOUT] Error details:', errorMessage);
     } finally {
+      console.log('🏁 [UNIFIED LAYOUT] loadProject finished');
       setLoading(false);
     }
   }, [projectId]);
@@ -194,7 +284,8 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
     if (projectId) {
       loadProject();
     }
-  }, [projectId, loadProject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId]);
 
   if (loading) {
     return (
@@ -232,7 +323,7 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`mobile-layout mobile-optimized ${isMobile ? 'mobile-container' : 'min-h-screen'} bg-background`}>
       {/* Command Palette */}
       <CommandPalette
         isOpen={commandPalette.isOpen}
@@ -242,113 +333,190 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
       />
 
       {/* Project Header with Breadcrumb Navigation */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-16 items-center justify-between px-6">
+      <header className={`${isMobile ? 'mobile-header' : 'border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'}`}>
+        <div className={`flex ${isMobile ? 'h-14' : 'h-16'} items-center justify-between ${isMobile ? 'px-4' : 'px-6'}`}>
           <div className="flex items-center gap-4">
-            {/* Breadcrumb Navigation */}
-            <nav className="flex items-center gap-2 text-sm">
-              <a
-                href="/dashboard"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Dashboard
-              </a>
-              <span className="text-muted-foreground">/</span>
-              <a
-                href="/dashboard/projects"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Projetos
-              </a>
-              <span className="text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{project.name}</span>
+            {/* Breadcrumb Navigation - Simplified for mobile */}
+            <nav className={`flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              {!isMobile ? (
+                <>
+                  <a
+                    href="/dashboard"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Dashboard
+                  </a>
+                  <span className="text-muted-foreground">/</span>
+                  <a
+                    href="/dashboard/projects"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Projetos
+                  </a>
+                  <span className="text-muted-foreground">/</span>
+                </>
+              ) : (
+                <a
+                  href="/dashboard/projects"
+                  className="text-muted-foreground hover:text-foreground transition-colors touch-target"
+                >
+                  ← Projetos
+                </a>
+              )}
+              <span className={`text-foreground font-medium ${isMobile ? 'truncate max-w-32' : ''}`} title={project.name}>
+                {project.name}
+              </span>
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Project Actions */}
+          <div className="flex items-center gap-2">
+            {/* Project Actions - Hidden on mobile */}
             <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={handleSaveAsTemplate}
+                disabled={saveAsTemplateLoading}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors touch-target disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Salvar projeto como template personalizado"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden lg:inline">
+                  {saveAsTemplateLoading ? 'Salvando...' : 'Salvar como Template'}
+                </span>
+              </button>
               <a
                 href={`/dashboard/projects/${projectId}/settings`}
-                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors touch-target"
               >
                 Settings
               </a>
             </div>
 
-            {/* Mobile View Switcher */}
-            {isMobile && (
-              <div className="flex bg-secondary rounded-lg p-1">
-                <button
-                  onClick={() => setActiveView('kanban')}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    activeView === 'kanban'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Kanban className="h-4 w-4" />
-                  Kanban
-                </button>
-                <button
-                  onClick={() => setActiveView('chat')}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                    activeView === 'chat'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Chat
-                </button>
-              </div>
+            {/* Chat Toggle for Desktop/Tablet */}
+            {!isMobile && (
+              <button
+                onClick={() => setChatCollapsed(!chatCollapsed)}
+                className="touch-target-comfortable flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                title={chatCollapsed ? 'Mostrar Chat' : 'Ocultar Chat'}
+              >
+                <MessageSquare className="h-4 w-4" />
+                {!chatCollapsed && <span className="hidden lg:inline">Chat</span>}
+              </button>
             )}
           </div>
         </div>
+
+        {/* Mobile Tab Bar - Fixed at bottom with swipe indicator */}
+        {isMobile && (
+          <div className="mobile-tab-bar">
+            <div className="flex bg-secondary/50 rounded-lg p-1 mx-4 relative">
+              {/* Swipe indicator */}
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-muted-foreground/30 rounded-full"></div>
+
+              <button
+                onClick={() => setActiveView('kanban')}
+                className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeView === 'kanban'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Kanban className="h-4 w-4" />
+                <span>Kanban</span>
+              </button>
+              <button
+                onClick={() => setActiveView('chat')}
+                className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeView === 'chat'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Chat</span>
+              </button>
+            </div>
+
+            {/* Swipe hint text */}
+            <div className="text-center mt-1 mb-2">
+              <span className="text-xs text-muted-foreground">
+                Deslize para navegar entre as abas
+              </span>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* Main Content Area - Full Width 70/30 Layout */}
-      <div className="h-[calc(100vh-4rem)] flex overflow-hidden">
-        {/* Desktop: 70/30 Layout, Mobile: Single View */}
-        {!isMobile ? (
-          <>
-            {/* Kanban Section - 70% */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 p-6 overflow-auto">
-                <div className="h-full">
-                  <KanbanBoard projectId={projectId} />
-                </div>
-              </div>
-            </div>
-
-            {/* Chat Section - 30% */}
-            <div className="w-96 border-l flex flex-col overflow-hidden">
-              <ProjectChat
-                projectId={projectId}
-                availableTasks={tasks.map(task => ({ id: task.id, title: task.title }))}
-              />
-            </div>
-          </>
-        ) : (
-          /* Mobile: Single View */
+      {/* Main Content Area - Responsive Layout with Swipe Gestures */}
+      <div
+        className={`mobile-content ${isMobile ? 'h-[calc(100vh-7.5rem)]' : 'h-[calc(100vh-4rem)]'} flex flex-row overflow-hidden`}
+        {...(isMobile ? swipeHandlers : {})}
+      >
+        {/* Mobile: Single View with Tab Navigation and Swipe Support */}
+        {isMobile ? (
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 p-4 overflow-auto">
+            <div className="mobile-content touch-scroll overflow-auto"
+                 style={{
+                   paddingBottom: isKeyboardOpen ? `${keyboardHeight}px` : '0px',
+                   transition: 'padding-bottom 0.3s ease-in-out'
+                 }}>
               {activeView === 'kanban' ? (
-                <div className="h-full">
+                <div className="mobile-kanban-container">
                   <KanbanBoard projectId={projectId} />
                 </div>
               ) : (
-                <div className="h-full">
+                <div className="mobile-chat-container">
                   <ProjectChat
                     projectId={projectId}
                     availableTasks={tasks.map(task => ({ id: task.id, title: task.title }))}
+                    availableMilestones={milestones.map(milestone => ({
+                      id: milestone.id,
+                      name: milestone.name,
+                      progress_percentage: milestone.progress_percentage,
+                      status: milestone.status
+                    }))}
                   />
                 </div>
               )}
             </div>
           </div>
+        ) : (
+          /* Desktop/Tablet: True 70/30 Layout */
+          <>
+            {/* Kanban Section - 70% width */}
+            <div className={`${chatCollapsed ? 'flex-1' : 'w-[70%]'} flex flex-col overflow-hidden transition-all duration-300`}>
+              <div className="flex-1 p-6 overflow-auto touch-scroll">
+                <div className="h-full">
+                  <KanbanBoard projectId={projectId} />
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Section - 30% width, permanently visible */}
+            {!chatCollapsed && (
+              <div className="w-[30%] border-l flex flex-col overflow-hidden transition-all duration-300">
+                <ProjectChat
+                  projectId={projectId}
+                  availableTasks={tasks.map(task => ({ id: task.id, title: task.title }))}
+                  availableMilestones={milestones.map(milestone => ({
+                    id: milestone.id,
+                    name: milestone.name,
+                    progress_percentage: milestone.progress_percentage,
+                    status: milestone.status
+                  }))}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* Save as Template Modal */}
+      <SaveAsTemplateModal
+        isOpen={saveAsTemplateModalOpen}
+        onClose={() => setSaveAsTemplateModalOpen(false)}
+        project={project}
+        onSuccess={handleSaveAsTemplateSuccess}
+      />
     </div>
   );
 }

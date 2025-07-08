@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Calendar, Users, Copy, Edit, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Users, Copy, Edit, Trash2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import CloneProjectModal from '@/components/client/projects/clone-project-modal';
+import SaveAsTemplateModal from '@/components/client/projects/save-as-template-modal';
 
 interface Project {
   id: string;
@@ -36,6 +37,8 @@ export default function ProjectsPage() {
   const [cloneModalOpen, setCloneModalOpen] = useState(false);
   const [projectToClone, setProjectToClone] = useState<Project | null>(null);
   const [isCloning, setIsCloning] = useState(false);
+  const [saveAsTemplateModalOpen, setSaveAsTemplateModalOpen] = useState(false);
+  const [projectToSaveAsTemplate, setProjectToSaveAsTemplate] = useState<Project | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -266,6 +269,29 @@ export default function ProjectsPage() {
     setProjectToClone(null);
   };
 
+  const handleSaveAsTemplate = (projectId: string, projectName: string) => {
+    console.log('🎨 [SAVE AS TEMPLATE] Save as template button clicked for project:', { projectId, projectName });
+
+    // Find the project to save as template
+    const project = projects.find(p => p.id === projectId);
+    if (project) {
+      setProjectToSaveAsTemplate(project);
+      setSaveAsTemplateModalOpen(true);
+    }
+  };
+
+  const handleSaveAsTemplateSuccess = () => {
+    setSaveAsTemplateModalOpen(false);
+    setProjectToSaveAsTemplate(null);
+    // Optionally refresh projects list
+    loadProjects();
+  };
+
+  const handleCloseSaveAsTemplateModal = () => {
+    setSaveAsTemplateModalOpen(false);
+    setProjectToSaveAsTemplate(null);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -448,6 +474,23 @@ export default function ProjectsPage() {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
+                            handleSaveAsTemplate(project.id, project.name);
+                          }}
+                          className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors"
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Salvar como template</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
                             handleDeleteProject(project.id, project.name);
                           }}
                           className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
@@ -500,6 +543,14 @@ export default function ProjectsPage() {
         onClose={handleCloseCloneModal}
         onClone={handleCloneConfirm}
         isLoading={isCloning}
+      />
+
+      {/* Save as Template Modal */}
+      <SaveAsTemplateModal
+        isOpen={saveAsTemplateModalOpen}
+        onClose={handleCloseSaveAsTemplateModal}
+        project={projectToSaveAsTemplate}
+        onSuccess={handleSaveAsTemplateSuccess}
       />
     </div>
   );

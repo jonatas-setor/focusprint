@@ -8,9 +8,12 @@ import {
   DragStartEvent,
   DragOverEvent,
   PointerSensor,
+  TouchSensor,
+  MouseSensor,
   useSensor,
   useSensors,
   closestCorners,
+  DragOverlay,
 } from '@dnd-kit/core';
 import { useRealtime } from '@/contexts/realtime-context';
 import KanbanColumn from './kanban-column';
@@ -67,12 +70,14 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const { subscribeToTasks, subscribeToColumns } = useRealtime();
 
-  // Test log to verify console is working
-  console.log('🔥 [KANBAN BOARD] Component initialized with projectId:', projectId);
+  // Component initialization - removed console.log to prevent infinite loop messages
 
   const loadData = useCallback(async () => {
+    if (!projectId) return;
+
     try {
       setLoading(true);
       setError('');
@@ -110,7 +115,7 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
     if (projectId) {
       loadData();
     }
-  }, [projectId, loadData]);
+  }, [projectId, loadData]); // Include loadData in dependencies for proper React behavior
 
   // Set up Realtime subscription for tasks
   useEffect(() => {
@@ -194,7 +199,22 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
     return unsubscribe;
   }, [projectId, subscribeToColumns]);
 
+  // Enhanced sensors for better touch and mouse support
   const sensors = useSensors(
+    // Mouse sensor for desktop
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    // Touch sensor for mobile devices
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
+    // Pointer sensor as fallback
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
@@ -203,16 +223,25 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setDraggedTaskId(event.active.id as string);
+    const taskId = event.active.id as string;
+    setDraggedTaskId(taskId);
+
+    // Find and store the dragged task for overlay
+    const task = tasks.find(t => t.id === taskId);
+    setDraggedTask(task || null);
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = (_event: DragOverEvent) => {
     // Add any drag over logic here if needed
     // This can be used for real-time feedback during drag
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+
+    // Clear drag state
+    setDraggedTaskId(null);
+    setDraggedTask(null);
 
     // If no destination, do nothing
     if (!over) {
@@ -363,7 +392,7 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
         const responseText = await response.text();
         console.error('❌ [TASK CREATE] Raw response text:', responseText);
 
-        let errorData = {};
+        let errorData: { error?: string } = {};
         try {
           errorData = responseText ? JSON.parse(responseText) : {};
         } catch (parseError) {
@@ -478,14 +507,15 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+    <div className="h-full flex flex-col mobile-optimized">
+      {/* Header - Mobile optimized */}
+      <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Kanban Board</h2>
+          <h2 className="text-base md:text-lg font-semibold">Kanban Board</h2>
         </div>
-        <button className="flex items-center gap-2 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80">
+        <button className="touch-target-comfortable flex items-center gap-2 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
           <Plus className="h-4 w-4" />
-          Add Column
+          <span className="hidden sm:inline">Add Column</span>
         </button>
       </div>
 
@@ -496,8 +526,9 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex gap-6 h-full min-w-max pb-6">
+        {/* Mobile-optimized Kanban board */}
+        <div className="mobile-kanban-board flex-1 overflow-x-auto touch-scroll">
+          <div className="mobile-kanban-columns flex gap-4 md:gap-6 h-full min-w-max pb-4 md:pb-6">
             {columns.map((column) => (
               <KanbanColumn
                 key={column.id}
@@ -511,6 +542,27 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
             ))}
           </div>
         </div>
+
+        {/* Drag Overlay for better mobile feedback */}
+        <DragOverlay>
+          {draggedTask ? (
+            <div className="mobile-task-card mobile-gpu-accelerated opacity-90 transform rotate-3 scale-105 shadow-2xl ring-2 ring-primary/50">
+              <div className="bg-card border border-primary/30 rounded-lg p-3 md:p-4">
+                <h4 className="font-semibold text-sm text-card-foreground mb-1">
+                  {draggedTask.title}
+                </h4>
+                {draggedTask.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {draggedTask.description.length > 60
+                      ? `${draggedTask.description.substring(0, 60)}...`
+                      : draggedTask.description
+                    }
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

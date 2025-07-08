@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Smile, Hash } from 'lucide-react';
+import { Send, Paperclip, Smile, Hash, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { extractTaskQuery, searchTasksForAutoComplete } from '@/utils/task-references';
+import { extractMilestoneQuery, searchMilestonesForAutoComplete } from '@/utils/milestone-references';
 
 interface Task {
   id: string;
   title: string;
+}
+
+interface Milestone {
+  id: string;
+  name: string;
+  progress_percentage: number;
+  status: string;
 }
 
 interface MessageInputProps {
@@ -21,7 +29,11 @@ export default function MessageInput({ projectId, onSendMessage }: MessageInputP
   const [showTaskSuggestions, setShowTaskSuggestions] = useState(false);
   const [taskSuggestions, setTaskSuggestions] = useState<Task[]>([]);
   const [taskQuery, setTaskQuery] = useState('');
+  const [showMilestoneSuggestions, setShowMilestoneSuggestions] = useState(false);
+  const [milestoneSuggestions, setMilestoneSuggestions] = useState<Milestone[]>([]);
+  const [milestoneQuery, setMilestoneQuery] = useState('');
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [suggestionType, setSuggestionType] = useState<'task' | 'milestone' | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MoreVertical } from 'lucide-react';
 import { useRealtime } from '@/contexts/realtime-context';
 import MessageList from './message-list';
-import MessageInput from './message-input';
+import EnhancedMessageInput from './enhanced-message-input';
 import GoogleMeetButton from './google-meet-button';
 
 interface Message {
@@ -27,29 +27,44 @@ interface Message {
 interface ChatContainerProps {
   projectId: string;
   availableTasks?: { id: string; title: string }[];
+  availableMilestones?: {
+    id: string;
+    name: string;
+    progress_percentage: number;
+    status: string;
+  }[];
 }
 
-export default function ChatContainer({ projectId, availableTasks = [] }: ChatContainerProps) {
+export default function ChatContainer({
+  projectId,
+  availableTasks = [],
+  availableMilestones = []
+}: ChatContainerProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { subscribeToMessages } = useRealtime();
 
-  useEffect(() => {
-    if (projectId) {
-      loadMessages();
-    }
-  }, [projectId]);
-
-  // Set up Realtime subscription for messages
+  // Load messages and setup real-time subscription
   useEffect(() => {
     if (!projectId) return;
 
+    console.log('🔄 Setting up chat for project:', projectId);
+
+    // Load initial messages
+    loadMessages();
+
+    // TODO: Setup real-time subscription for messages when Realtime is properly configured
+    // For now, we'll rely on manual updates after sending messages
+    console.log('⚠️ Realtime subscription disabled - using manual updates for now');
+
+    /*
+    // Setup real-time subscription for messages (disabled until Realtime is configured)
     console.log('🔔 Setting up Realtime subscription for messages in project:', projectId);
 
     const unsubscribe = subscribeToMessages(projectId, (payload) => {
-      console.log('📨 Realtime message update:', payload);
+      console.log('📨 Realtime message update:', payload.eventType, payload);
 
       switch (payload.eventType) {
         case 'INSERT':
@@ -62,9 +77,11 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
             break;
           }
 
+          console.log('✅ Adding new message to chat:', newMessage.id, newMessage.content);
           setMessages(prev => {
             // Avoid duplicates
             if (prev.some(msg => msg.id === newMessage.id)) {
+              console.log('⚠️ Message already exists, skipping duplicate:', newMessage.id);
               return prev;
             }
             return [...prev, newMessage];
@@ -74,25 +91,36 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
         case 'UPDATE':
           // Update existing message
           const updatedMessage = payload.new as Message;
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === updatedMessage.id ? updatedMessage : msg
-            )
-          );
+          if (updatedMessage && updatedMessage.id) {
+            console.log('🔄 Updating message in chat:', updatedMessage.id);
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === updatedMessage.id ? updatedMessage : msg
+              )
+            );
+          }
           break;
 
         case 'DELETE':
           // Remove deleted message
           const deletedMessage = payload.old as Message;
-          setMessages(prev =>
-            prev.filter(msg => msg.id !== deletedMessage.id)
-          );
+          if (deletedMessage && deletedMessage.id) {
+            console.log('🗑️ Removing message from chat:', deletedMessage.id);
+            setMessages(prev =>
+              prev.filter(msg => msg.id !== deletedMessage.id)
+            );
+          }
           break;
       }
     });
 
-    return unsubscribe;
-  }, [projectId, subscribeToMessages]);
+    // Cleanup subscription on component unmount
+    return () => {
+      console.log('🔌 Cleaning up real-time subscription for project:', projectId);
+      unsubscribe();
+    };
+    */
+  }, [projectId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -136,6 +164,8 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
 
   const handleSendMessage = async (content: string, messageType: string = 'text') => {
     try {
+      console.log('📤 Sending message:', content);
+
       const response = await fetch(`/api/client/projects/${projectId}/messages`, {
         method: 'POST',
         headers: {
@@ -149,15 +179,44 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('❌ Failed to send message:', errorData);
         throw new Error(errorData.error || 'Failed to send message');
       }
 
       const data = await response.json();
-      
-      // Add the new message to the list
-      setMessages(prev => [...prev, data.message]);
+      console.log('✅ Message sent successfully:', data);
+
+      // The RPC function returns an array, so we need to get the first item
+      let newMessage = data.message;
+
+      // Check if message is an array (from RPC function) and get the first item
+      if (Array.isArray(newMessage) && newMessage.length > 0) {
+        newMessage = newMessage[0];
+        console.log('📦 Extracted message from array:', newMessage);
+      }
+
+      // Immediately add the message to the list for instant feedback
+      if (newMessage && newMessage.id && newMessage.content) {
+        console.log('⚡ Adding message to chat immediately:', newMessage.id);
+        setMessages(prev => {
+          // Check if message already exists to avoid duplicates
+          const exists = prev.some(msg => msg.id === newMessage.id);
+          if (exists) {
+            console.log('⚠️ Message already exists, skipping duplicate:', newMessage.id);
+            return prev;
+          }
+          // Add the new message to the end of the list
+          const updatedMessages = [...prev, newMessage];
+          console.log('📝 Updated messages list, total:', updatedMessages.length);
+          return updatedMessages;
+        });
+      } else {
+        console.error('❌ Invalid message data received:', newMessage);
+        console.error('❌ Full response data:', data);
+      }
+
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error sending message:', error);
       throw error;
     }
   };
@@ -178,13 +237,10 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
       }
 
       const data = await response.json();
-      
-      // Update the message in the list
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === messageId ? data.message : msg
-        )
-      );
+      console.log('✅ Message updated successfully:', messageId);
+
+      // Note: Real-time subscription will handle updating the message in the list
+      // No need to manually update state here
     } catch (error) {
       console.error('Error updating message:', error);
       throw error;
@@ -202,8 +258,10 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
         throw new Error(errorData.error || 'Failed to delete message');
       }
 
-      // Remove the message from the list
-      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      console.log('✅ Message deleted successfully:', messageId);
+
+      // Note: Real-time subscription will handle removing the message from the list
+      // No need to manually update state here
     } catch (error) {
       console.error('Error deleting message:', error);
       throw error;
@@ -222,29 +280,29 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Chat Header */}
-      <div className="p-4 border-b bg-background/95">
+    <div className="h-full max-h-[calc(100vh-4rem)] flex flex-col mobile-optimized">
+      {/* Chat Header - Mobile optimized */}
+      <div className="p-3 md:p-4 border-b bg-background/95 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">Project Chat</h3>
+            <h3 className="font-medium text-sm md:text-base">Project Chat</h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <GoogleMeetButton
               projectId={projectId}
               onMeetCreated={handleMeetCreated}
             />
-            <button className="p-1 hover:bg-secondary rounded">
+            <button className="touch-target p-1 hover:bg-secondary rounded transition-colors">
               <MoreVertical className="h-4 w-4" />
             </button>
           </div>
         </div>
         {error && (
-          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+          <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
             {error}
-            <button 
+            <button
               onClick={() => setError('')}
-              className="ml-2 underline hover:no-underline"
+              className="touch-target ml-2 underline hover:no-underline"
             >
               Dismiss
             </button>
@@ -252,8 +310,8 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
         )}
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
+      {/* Messages Area - Mobile optimized */}
+      <div className="mobile-chat-messages flex-1 overflow-y-auto max-h-[calc(100vh-12rem)]">
         <MessageList
           messages={messages}
           projectId={projectId}
@@ -261,13 +319,14 @@ export default function ChatContainer({ projectId, availableTasks = [] }: ChatCo
           onUpdateMessage={handleUpdateMessage}
           onDeleteMessage={handleDeleteMessage}
           availableTasks={availableTasks}
+          availableMilestones={availableMilestones}
         />
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Message Input */}
-      <div className="border-t bg-background/95">
-        <MessageInput
+      {/* Message Input - Mobile optimized */}
+      <div className="mobile-chat-input border-t bg-background/95 flex-shrink-0">
+        <EnhancedMessageInput
           projectId={projectId}
           onSendMessage={handleSendMessage}
         />

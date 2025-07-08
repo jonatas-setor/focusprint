@@ -26,10 +26,13 @@ export async function GET(
     }
 
     const { id: projectId } = await params
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')
+    const limit = parseInt(searchParams.get('limit') || '50')
 
     // Verify user has access to the project
     const { data: project, error: accessError } = await supabase
-      .from('projects')
+      .from('client_data.projects')
       .select(`
         id,
         teams!inner(client_id)
@@ -43,7 +46,7 @@ export async function GET(
 
     // Get user's client_id
     const { data: profile } = await supabase
-      .from('client_profiles')
+      .from('client_data.client_profiles')
       .select('client_id')
       .eq('user_id', user.id)
       .single()
@@ -52,28 +55,40 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Get project milestones with task counts
-    const { data: milestones, error } = await supabase
+    // Build query for milestones
+    let query = supabase
       .from('project_milestones')
-      .select(`
-        *,
-        tasks:tasks(count)
-      `)
+      .select('id, name, description, due_date, status, progress_percentage, priority, color, position, created_at')
       .eq('project_id', projectId)
       .order('position', { ascending: true })
 
-    if (error) {
-      console.error('Error fetching milestones:', error)
+    // Apply search filter if provided
+    if (search) {
+      query = query.ilike('name', `%${search}%`)
+    }
+
+    // Apply limit
+    query = query.limit(limit)
+
+    const { data: milestones, error: milestonesError } = await query
+
+    if (milestonesError) {
+      console.error('Error fetching milestones:', milestonesError)
       return NextResponse.json({ error: 'Failed to fetch milestones' }, { status: 500 })
     }
 
-    // Transform the data to include task counts
-    const milestonesWithCounts = milestones.map(milestone => ({
-      ...milestone,
-      task_count: milestone.tasks?.[0]?.count || 0
-    }))
+    // For search requests, return simplified data for auto-complete
+    if (search) {
+      const simplifiedMilestones = milestones.map(milestone => ({
+        id: milestone.id,
+        name: milestone.name,
+        progress_percentage: milestone.progress_percentage || 0,
+        status: milestone.status || 'not_started'
+      }))
+      return NextResponse.json({ milestones: simplifiedMilestones })
+    }
 
-    return NextResponse.json({ milestones: milestonesWithCounts })
+    return NextResponse.json({ milestones })
 
   } catch (error) {
     console.error('Error in GET /api/client/projects/[id]/milestones:', error)
@@ -103,7 +118,7 @@ export async function POST(
 
     // Verify user has access to the project
     const { data: project, error: accessError } = await supabase
-      .from('projects')
+      .from('client_data.projects')
       .select(`
         id,
         teams!inner(client_id)
@@ -117,7 +132,7 @@ export async function POST(
 
     // Get user's client_id
     const { data: profile } = await supabase
-      .from('client_profiles')
+      .from('client_data.client_profiles')
       .select('client_id')
       .eq('user_id', user.id)
       .single()
@@ -145,7 +160,7 @@ export async function POST(
 
     // Fetch the created milestone
     const { data: newMilestone, error: fetchError } = await supabase
-      .from('project_milestones')
+      .from('client_data.project_milestones')
       .select('*')
       .eq('id', milestoneId)
       .single()

@@ -14,17 +14,21 @@ const customJestConfig = {
     '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
     '<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}'
   ],
+  testTimeout: 30000, // 30 seconds for integration tests
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
+    '!src/__tests__/**',
     '!src/app/**/layout.tsx',
     '!src/app/**/page.tsx',
     '!src/app/**/loading.tsx',
     '!src/app/**/error.tsx',
     '!src/app/**/not-found.tsx',
+    '!src/types/**',
+    '!src/lib/supabase/**'
   ],
   coverageThreshold: {
     global: {

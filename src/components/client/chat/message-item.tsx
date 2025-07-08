@@ -9,7 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { parseTaskReferences, formatMessageWithTaskReferences, MessagePart } from '@/utils/task-references';
+import { parseTaskReferences } from '@/utils/task-references';
+import { parseMilestoneReferences, formatMessageWithAllReferences, getMilestoneStatusColor } from '@/utils/milestone-references';
 import TaskDetailModal from '@/components/client/tasks/task-detail-modal';
 import { toast } from 'sonner';
 
@@ -52,13 +53,32 @@ interface MessageItemProps {
   onUpdate: (messageId: string, content: string) => void;
   onDelete: (messageId: string) => void;
   availableTasks?: { id: string; title: string }[];
+  availableMilestones?: {
+    id: string;
+    name: string;
+    progress_percentage: number;
+    status: string;
+  }[];
 }
 
-export default function MessageItem({ message, projectId, onUpdate, onDelete, availableTasks = [] }: MessageItemProps) {
+export default function MessageItem({
+  message,
+  projectId,
+  onUpdate,
+  onDelete,
+  availableTasks = [],
+  availableMilestones = []
+}: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const [showMenu, setShowMenu] = useState(false);
   const [validTasks, setValidTasks] = useState<Map<string, { id: string, title: string }>>(new Map());
+  const [validMilestones, setValidMilestones] = useState<Map<string, {
+    id: string,
+    name: string,
+    progress_percentage: number,
+    status: string
+  }>>(new Map());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [loadingTaskId, setLoadingTaskId] = useState<string | null>(null);
@@ -67,13 +87,13 @@ export default function MessageItem({ message, projectId, onUpdate, onDelete, av
   const currentUserId = 'd1a02417-37f3-41fb-b01e-5ce0c08faab8';
   const isOwnMessage = message.user_id === currentUserId;
 
-  // Load and validate task references when message content or available tasks change
+  // Load and validate task and milestone references when message content changes
   useEffect(() => {
+    // Validate task references
     const { taskIds } = parseTaskReferences(message.content);
     if (taskIds.length > 0 && availableTasks.length > 0) {
       const validatedTasks = new Map();
 
-      // Validate task IDs against available tasks
       taskIds.forEach(taskId => {
         const task = availableTasks.find(t => t.id === taskId);
         if (task) {
@@ -85,7 +105,24 @@ export default function MessageItem({ message, projectId, onUpdate, onDelete, av
     } else {
       setValidTasks(new Map());
     }
-  }, [message.content, availableTasks]);
+
+    // Validate milestone references
+    const { milestoneIds } = parseMilestoneReferences(message.content);
+    if (milestoneIds.length > 0 && availableMilestones.length > 0) {
+      const validatedMilestones = new Map();
+
+      milestoneIds.forEach(milestoneId => {
+        const milestone = availableMilestones.find(m => m.id === milestoneId);
+        if (milestone) {
+          validatedMilestones.set(milestoneId, milestone);
+        }
+      });
+
+      setValidMilestones(validatedMilestones);
+    } else {
+      setValidMilestones(new Map());
+    }
+  }, [message.content, availableTasks, availableMilestones]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -193,7 +230,7 @@ export default function MessageItem({ message, projectId, onUpdate, onDelete, av
 
     // Parse and format task references in content
     const parseContent = (content: string) => {
-      const parts = formatMessageWithTaskReferences(content, validTasks);
+      const parts = formatMessageWithAllReferences(content, validTasks, validMilestones);
 
       return parts.map((part, index) => {
         switch (part.type) {
@@ -222,6 +259,21 @@ export default function MessageItem({ message, projectId, onUpdate, onDelete, av
               </span>
             );
 
+          case 'milestone-reference':
+            return (
+              <span
+                key={`milestone-ref-${index}`}
+                className={`inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 rounded-md text-sm cursor-pointer hover:bg-purple-200 transition-colors`}
+                title={`Milestone: ${part.milestone?.name} - ${part.milestone?.progress_percentage}% complete`}
+              >
+                <span className="text-xs">🎯</span>
+                <span className="font-medium">{part.milestone?.name}</span>
+                <span className={`text-xs px-1 rounded ${getMilestoneStatusColor(part.milestone?.status || '')}`}>
+                  {part.milestone?.progress_percentage}%
+                </span>
+              </span>
+            );
+
           case 'invalid-task-reference':
             return (
               <span
@@ -231,6 +283,18 @@ export default function MessageItem({ message, projectId, onUpdate, onDelete, av
               >
                 <span className="text-xs">#</span>
                 <span className="line-through">{part.content.substring(1)}</span>
+              </span>
+            );
+
+          case 'invalid-milestone-reference':
+            return (
+              <span
+                key={`invalid-milestone-ref-${index}`}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 rounded-md text-sm"
+                title="Milestone not found"
+              >
+                <span className="text-xs">🎯</span>
+                <span className="line-through">{part.content}</span>
               </span>
             );
 

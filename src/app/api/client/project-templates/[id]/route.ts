@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch template with detailed information
+    // Fetch template with detailed information (RLS will handle access control)
     const { data: template, error } = await supabase
       .from('project_templates')
       .select(`
@@ -24,53 +24,72 @@ export async function GET(
         name,
         description,
         category,
+        template_type,
         template_config,
         is_active,
+        created_by,
+        client_id,
+        team_id,
+        source_project_id,
         created_at,
-        updated_at,
-        template_columns:template_columns(
-          id,
-          name,
-          position,
-          color,
-          description,
-          limit_wip
-        ),
-        template_tasks:template_tasks(
-          id,
-          title,
-          description,
-          position,
-          priority,
-          estimated_hours,
-          tags,
-          column_id,
-          due_date_offset
-        )
+        updated_at
       `)
       .eq('id', templateId)
       .eq('is_active', true)
       .single();
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json(
-          { error: 'Template not found' },
-          { status: 404 }
-        );
-      }
-      console.error('Error fetching template details:', error);
+    if (error || !template) {
+      console.error('Error fetching template:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch template details' },
-        { status: 500 }
+        { error: 'Template not found or access denied' },
+        { status: 404 }
       );
     }
 
+    // Fetch columns separately
+    const { data: columns } = await supabase
+      .from('template_columns')
+      .select(`
+        id,
+        name,
+        position,
+        color,
+        description,
+        limit_wip
+      `)
+      .eq('template_id', templateId)
+      .order('position');
+
+    // Fetch tasks separately
+    const { data: tasks } = await supabase
+      .from('template_tasks')
+      .select(`
+        id,
+        title,
+        description,
+        position,
+        priority,
+        estimated_hours,
+        tags,
+        column_id,
+        due_date_offset,
+        assigned_to_role
+      `)
+      .eq('template_id', templateId)
+      .order('position');
+
+    // Combine the data
+    const templateWithDetails = {
+      ...template,
+      template_columns: columns || [],
+      template_tasks: tasks || []
+    };
+
     // Sort columns by position
-    const sortedColumns = template.template_columns?.sort((a, b) => a.position - b.position) || [];
+    const sortedColumns = templateWithDetails.template_columns.sort((a, b) => a.position - b.position);
     
     // Sort tasks by column and position
-    const sortedTasks = template.template_tasks?.sort((a, b) => {
+    const sortedTasks = templateWithDetails.template_tasks.sort((a, b) => {
       // First sort by column position, then by task position
       const columnA = sortedColumns.find(col => col.id === a.column_id);
       const columnB = sortedColumns.find(col => col.id === b.column_id);
@@ -82,7 +101,7 @@ export async function GET(
       }
       
       return a.position - b.position;
-    }) || [];
+    });
 
     // Group tasks by column for preview
     const tasksByColumn = sortedTasks.reduce((acc, task) => {
@@ -126,13 +145,13 @@ export async function GET(
 
     // Prepare response
     const templateDetails = {
-      ...template,
+      ...templateWithDetails,
       template_columns: sortedColumns,
       template_tasks: sortedTasks,
       stats,
       preview,
-      usage_tips: generateUsageTips(template.category, stats),
-      customization_options: generateCustomizationOptions(template.template_config)
+      usage_tips: generateUsageTips(templateWithDetails.category, stats),
+      customization_options: generateCustomizationOptions(templateWithDetails.template_config)
     };
 
     return NextResponse.json({
@@ -142,6 +161,76 @@ export async function GET(
 
   } catch (error) {
     console.error('Unexpected error in project-templates/[id] GET:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/client/project-templates/[id] - Soft delete a template
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = await createClient();
+    const { id: templateId } = await params;
+
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log('🗑️ [DELETE TEMPLATE] Deleting template:', {
+      templateId,
+      userId: user.id
+    });
+
+    // Soft delete the template (set is_active = false)
+    // RLS policies will ensure only the owner can delete their templates
+    const { data, error } = await supabase
+      .from('project_templates')
+      .update({
+        is_active: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', templateId)
+      .eq('created_by', user.id)
+      .eq('is_active', true)
+      .select('id, name')
+      .single();
+
+    if (error) {
+      console.error('Error deleting template:', error);
+      if (error.code === 'PGRST116') {
+        return NextResponse.json(
+          { error: 'Template not found or access denied' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(
+        { error: 'Failed to delete template' },
+        { status: 500 }
+      );
+    }
+
+    console.log('✅ [DELETE TEMPLATE] Template deleted successfully:', {
+      templateId,
+      templateName: data.name
+    });
+
+    return NextResponse.json({
+      message: 'Template deleted successfully',
+      template: {
+        id: data.id,
+        name: data.name
+      }
+    });
+
+  } catch (error) {
+    console.error('Unexpected error in template DELETE:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -276,66 +365,6 @@ export async function PATCH(
 
   } catch (error) {
     console.error('Unexpected error in project-templates/[id] PATCH:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/client/project-templates/[id] - Deactivate template (Admin only)
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const supabase = await createClient();
-    const { id: templateId } = await params;
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { data: adminProfile } = await supabase
-      .schema('platform_admin')
-      .from('admin_profiles')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!adminProfile) {
-      return NextResponse.json(
-        { error: 'Admin privileges required' },
-        { status: 403 }
-      );
-    }
-
-    // Soft delete by deactivating template
-    const { error } = await supabase
-      .from('project_templates')
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', templateId);
-
-    if (error) {
-      console.error('Error deactivating template:', error);
-      return NextResponse.json(
-        { error: 'Failed to deactivate template' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      message: 'Template deactivated successfully'
-    });
-
-  } catch (error) {
-    console.error('Unexpected error in project-templates/[id] DELETE:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

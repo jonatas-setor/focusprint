@@ -12,6 +12,7 @@ import {
   Settings as SettingsIcon
 } from 'lucide-react';
 import ShortcutCustomizationSettings from '@/components/client/settings/shortcut-customization-settings';
+import UserPreferencesPanel from '@/components/client/preferences/user-preferences-panel';
 
 export default function SettingsPage() {
   return (
@@ -99,23 +100,7 @@ export default function SettingsPage() {
 
         {/* Appearance Tab */}
         <TabsContent value="appearance">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Aparência e Interface
-              </CardTitle>
-              <CardDescription>
-                Personalize a aparência e o comportamento da interface
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Palette className="h-12 w-12 mx-auto mb-4" />
-                <p>Configurações de aparência em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
+          <UserPreferencesPanel />
         </TabsContent>
 
         {/* Security Tab */}

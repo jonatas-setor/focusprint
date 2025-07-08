@@ -57,10 +57,14 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   ) => {
     const channelName = filter ? `${table}:${filter}` : table;
 
-    // Check if channel already exists
+    // Check if channel already exists and unsubscribe it first
     if (channelsRef.current.has(channelName)) {
-      console.warn(`Channel ${channelName} already exists`);
-      return () => {};
+      console.log(`🔄 Channel ${channelName} already exists, unsubscribing first`);
+      const existingChannel = channelsRef.current.get(channelName);
+      if (existingChannel) {
+        existingChannel.unsubscribe();
+        channelsRef.current.delete(channelName);
+      }
     }
 
     console.log(`📡 Subscribing to table: ${table}${filter ? ` with filter: ${filter}` : ''}`);

@@ -307,12 +307,12 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
       {...listeners}
       {...attributes}
       onClick={handleTaskClick}
-      className={`group bg-white border rounded-lg p-4 cursor-pointer
-        hover:shadow-xl hover:shadow-gray-200/50 hover:scale-[1.02] hover:-translate-y-1
-        transition-all duration-300 ease-out transform-gpu
-        ${task.completed ? 'opacity-75 bg-gray-50 border-gray-300' : ''}
+      className={`mobile-task-card mobile-draggable group bg-card border rounded-lg p-3 md:p-4 cursor-pointer touch-manipulation
+        hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02] hover:-translate-y-1
+        transition-all duration-300 ease-out mobile-gpu-accelerated
+        ${task.completed ? 'opacity-75 bg-muted border-muted-foreground/30' : ''}
         ${isDragging ?
-          'opacity-60 rotate-3 scale-110 shadow-2xl shadow-blue-500/30 z-50 ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50 to-white border-blue-300' :
+          'opacity-60 rotate-3 scale-110 shadow-2xl shadow-primary/30 z-50 ring-2 ring-primary/50 bg-gradient-to-br from-primary/5 to-card border-primary/30' :
           ''
         }
         ${!task.completed && isOverdue ? 'border-red-300 shadow-red-100 hover:border-red-400' :
@@ -355,17 +355,17 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
           )}
         </div>
 
-        {/* Quick Actions (visible on hover) */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mr-1">
+        {/* Quick Actions - Mobile optimized (always visible on mobile) */}
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 mr-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
               // Toggle task completion
               onUpdate(task.id, { completed: !task.completed });
             }}
-            className={`p-1 rounded transition-colors ${
+            className={`touch-target p-1 rounded transition-colors ${
               task.completed
-                ? 'hover:bg-gray-100 text-gray-600'
+                ? 'hover:bg-muted text-muted-foreground'
                 : 'hover:bg-green-100 text-green-600'
             }`}
             title={task.completed ? "Mark Incomplete" : "Mark Complete"}
@@ -402,19 +402,19 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
-            className="p-1 hover:bg-gray-100 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            className="touch-target p-1 hover:bg-muted rounded-md transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
           >
-            <MoreVertical className="h-4 w-4 text-gray-400" />
+            <MoreVertical className="h-4 w-4 text-muted-foreground" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-6 bg-white border rounded-md shadow-lg z-10 min-w-32">
+            <div className="absolute right-0 top-8 bg-card border rounded-md shadow-lg z-20 min-w-32 mobile-modal-overlay">
               <button
                 onClick={() => {
                   setShowEditModal(true);
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
+                className="touch-target-comfortable w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
               >
                 Edit
               </button>
@@ -425,7 +425,7 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
                   }
                   setShowMenu(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                className="touch-target-comfortable w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors"
               >
                 Delete
               </button>
