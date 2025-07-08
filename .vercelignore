@@ -14,14 +14,39 @@
 /public/fix-*.html
 test-*.js
 test-*.html
+test-*.txt
+email HTML - Fastparts/
 
 # Documentation files (not needed for production)
-implementation-sequence.md
+# All documentation files excluded from production deployment
+product-requirements.md
+AUTH_FIX_SUMMARY.md
+BUILD_ISSUES_ANALYSIS.md
+CONFIGURACAO_URGENTE_VERCEL.md
+DEPLOY_AGORA.txt
+JULY_5_COMMITS_DEPLOYMENT_REPORT.md
+README.md
+SHADCN_SETUP.md
+SITE_FUNCIONANDO.md
+SUPABASE_SETUP.md
+VERCEL_BUILD_STATUS_REPORT.md
+VERCEL_CONFIG_FINAL.md
+VERCEL_DEPLOYMENT.md
+VERCEL_DEPLOYMENT_DIAGNOSIS.md
+VERCEL_DEPLOYMENT_FIX.md
+VERCEL_DEPLOYMENT_GUIDE.md
+VERCEL_DEPLOYMENT_STATUS.md
+VERCEL_ENV_SETUP.md
+VERCEL_ENV_SETUP_GUIDE.md
+VERCEL_FINAL_SOLUTION.md
+VERCEL_LOGIN_FIX_SUMMARY.md
+VERCEL_SYNC_FIX_URGENT.md
+VERCEL_TROUBLESHOOTING_GUIDE.md
 client-crud-tasks-simple.md
+implementation-sequence.md
 docs/implementation/
 docs/database/
 docs/scripts/
-README.md
 CHANGELOG.md
 CONTRIBUTING.md
 
