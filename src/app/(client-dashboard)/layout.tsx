@@ -1,5 +1,6 @@
 import ClientRouteGuard from '@/components/client/auth/client-route-guard';
 import { RealtimeProvider } from '@/contexts/realtime-context';
+import { ProjectProvider } from '@/contexts/project-context';
 import GlobalShortcutsProvider from '@/components/client/shared/global-shortcuts-provider';
 import { ClientSidebar } from '@/components/client/shared/client-sidebar';
 import { ClientProfile } from '@/lib/auth/types';
@@ -31,8 +32,9 @@ export default function ClientDashboardLayout({
   return (
     <ClientRouteGuard>
       <RealtimeProvider>
-        <GlobalShortcutsProvider>
-          <div className="min-h-screen bg-background">
+        <ProjectProvider>
+          <GlobalShortcutsProvider>
+            <div className="min-h-screen bg-background">
         {/* Temporary Header */}
         <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center justify-between px-6">
@@ -56,8 +58,9 @@ export default function ClientDashboardLayout({
             {children}
           </main>
           </div>
-        </div>
-        </GlobalShortcutsProvider>
+          </div>
+          </GlobalShortcutsProvider>
+        </ProjectProvider>
       </RealtimeProvider>
     </ClientRouteGuard>
   );

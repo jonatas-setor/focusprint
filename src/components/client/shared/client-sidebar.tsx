@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { ClientProfile, canPerformAction } from '@/lib/auth/types';
 import { cn } from '@/lib/utils';
+import ProjectContextSection from './project-context-section';
+import { useOptionalProjectContext } from '@/contexts/project-context';
 
 interface ClientSidebarProps {
   profile: ClientProfile;
@@ -40,6 +42,7 @@ interface NavItem {
 
 export function ClientSidebar({ profile }: ClientSidebarProps) {
   const pathname = usePathname();
+  const projectContext = useOptionalProjectContext();
 
   // Check if current route is a project page
   const isProjectPage = useMemo(() => {
@@ -260,6 +263,16 @@ export function ClientSidebar({ profile }: ClientSidebarProps) {
 
           </nav>
         </ScrollArea>
+
+        {/* Project Context Section */}
+        {projectContext && projectContext.project && (
+          <ProjectContextSection
+            project={projectContext.project}
+            tasks={projectContext.tasks}
+            loading={projectContext.loading}
+            isCollapsed={isCollapsed}
+          />
+        )}
 
         {/* Plan Information Footer */}
         {!isCollapsed && (

@@ -10,6 +10,8 @@ import { useCommandPalette } from '@/hooks/use-command-palette';
 import CommandPalette from '@/components/client/shared/command-palette';
 import { useSwipeGestures, useMobileNavigation, useMobileKeyboard } from '@/hooks/use-mobile-navigation';
 import SaveAsTemplateModal from '@/components/client/projects/save-as-template-modal';
+import ProjectHeader from '@/components/client/projects/project-header';
+import { useProjectContext } from '@/contexts/project-context';
 import { toast } from 'sonner';
 
 interface UnifiedLayoutProps {
@@ -45,6 +47,8 @@ interface Milestone {
 
 export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) {
   // Removed excessive logging to prevent console spam
+  const supabase = createClient();
+  const { setProjectData, clearProjectData } = useProjectContext();
 
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -251,14 +255,19 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
       console.log('✅ [UNIFIED LAYOUT] Project loaded:', projectData.project?.name);
 
       // Load tasks if available (don't fail if tasks can't be loaded)
+      let loadedTasks = [];
       if (tasksResponse.ok) {
         const tasksData = await tasksResponse.json();
-        setTasks(tasksData.tasks || []);
-        console.log('✅ [UNIFIED LAYOUT] Tasks loaded:', tasksData.tasks?.length || 0);
+        loadedTasks = tasksData.tasks || [];
+        setTasks(loadedTasks);
+        console.log('✅ [UNIFIED LAYOUT] Tasks loaded:', loadedTasks.length);
       } else {
         console.warn('⚠️ [UNIFIED LAYOUT] Failed to load tasks for task references');
         setTasks([]);
       }
+
+      // Update project context for sidebar
+      setProjectData(projectData.project, loadedTasks, false);
 
       // Load milestones if available (don't fail if milestones can't be loaded)
       if (milestonesResponse.ok) {
@@ -274,6 +283,8 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
       const errorMessage = err instanceof Error ? err.message : 'Failed to load project';
       setError(errorMessage);
       console.error('❌ [UNIFIED LAYOUT] Error details:', errorMessage);
+      // Clear project context on error
+      clearProjectData();
     } finally {
       console.log('🏁 [UNIFIED LAYOUT] loadProject finished');
       setLoading(false);
@@ -286,6 +297,14 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  // Clear project context when component unmounts
+  useEffect(() => {
+    return () => {
+      clearProjectData();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (
@@ -332,119 +351,56 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
         placeholder="Digite um comando ou busque..."
       />
 
-      {/* Project Header with Breadcrumb Navigation */}
-      <header className={`${isMobile ? 'mobile-header' : 'border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'}`}>
-        <div className={`flex ${isMobile ? 'h-14' : 'h-16'} items-center justify-between ${isMobile ? 'px-4' : 'px-6'}`}>
-          <div className="flex items-center gap-4">
-            {/* Breadcrumb Navigation - Simplified for mobile */}
-            <nav className={`flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              {!isMobile ? (
-                <>
-                  <a
-                    href="/dashboard"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Dashboard
-                  </a>
-                  <span className="text-muted-foreground">/</span>
-                  <a
-                    href="/dashboard/projects"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Projetos
-                  </a>
-                  <span className="text-muted-foreground">/</span>
-                </>
-              ) : (
-                <a
-                  href="/dashboard/projects"
-                  className="text-muted-foreground hover:text-foreground transition-colors touch-target"
-                >
-                  ← Projetos
-                </a>
-              )}
-              <span className={`text-foreground font-medium ${isMobile ? 'truncate max-w-32' : ''}`} title={project.name}>
-                {project.name}
-              </span>
-            </nav>
+      {/* Minimal Project Header */}
+      <ProjectHeader
+        project={project}
+        loading={loading}
+        onSaveAsTemplate={handleSaveAsTemplate}
+        chatCollapsed={chatCollapsed}
+        onToggleChat={() => setChatCollapsed(!chatCollapsed)}
+        activeView={activeView}
+        onViewChange={setActiveView}
+      />
+
+      {/* Mobile Tab Bar - Fixed at bottom with swipe indicator */}
+      {isMobile && (
+        <div className="mobile-tab-bar border-b">
+          <div className="flex bg-secondary/50 rounded-lg p-1 mx-4 relative">
+            {/* Swipe indicator */}
+            <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-muted-foreground/30 rounded-full"></div>
+
+            <button
+              onClick={() => setActiveView('kanban')}
+              className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeView === 'kanban'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Kanban className="h-4 w-4" />
+              <span>Kanban</span>
+            </button>
+            <button
+              onClick={() => setActiveView('chat')}
+              className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeView === 'chat'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Chat</span>
+            </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Project Actions - Hidden on mobile */}
-            <div className="hidden md:flex items-center gap-2">
-              <button
-                onClick={handleSaveAsTemplate}
-                disabled={saveAsTemplateLoading}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors touch-target disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Salvar projeto como template personalizado"
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="hidden lg:inline">
-                  {saveAsTemplateLoading ? 'Salvando...' : 'Salvar como Template'}
-                </span>
-              </button>
-              <a
-                href={`/dashboard/projects/${projectId}/settings`}
-                className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors touch-target"
-              >
-                Settings
-              </a>
-            </div>
-
-            {/* Chat Toggle for Desktop/Tablet */}
-            {!isMobile && (
-              <button
-                onClick={() => setChatCollapsed(!chatCollapsed)}
-                className="touch-target-comfortable flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-                title={chatCollapsed ? 'Mostrar Chat' : 'Ocultar Chat'}
-              >
-                <MessageSquare className="h-4 w-4" />
-                {!chatCollapsed && <span className="hidden lg:inline">Chat</span>}
-              </button>
-            )}
+          {/* Swipe hint text */}
+          <div className="text-center mt-1 mb-2">
+            <span className="text-xs text-muted-foreground">
+              Deslize para navegar entre as abas
+            </span>
           </div>
         </div>
-
-        {/* Mobile Tab Bar - Fixed at bottom with swipe indicator */}
-        {isMobile && (
-          <div className="mobile-tab-bar">
-            <div className="flex bg-secondary/50 rounded-lg p-1 mx-4 relative">
-              {/* Swipe indicator */}
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-muted-foreground/30 rounded-full"></div>
-
-              <button
-                onClick={() => setActiveView('kanban')}
-                className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeView === 'kanban'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Kanban className="h-4 w-4" />
-                <span>Kanban</span>
-              </button>
-              <button
-                onClick={() => setActiveView('chat')}
-                className={`touch-target-comfortable flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeView === 'chat'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <MessageSquare className="h-4 w-4" />
-                <span>Chat</span>
-              </button>
-            </div>
-
-            {/* Swipe hint text */}
-            <div className="text-center mt-1 mb-2">
-              <span className="text-xs text-muted-foreground">
-                Deslize para navegar entre as abas
-              </span>
-            </div>
-          </div>
-        )}
-      </header>
+      )}
 
       {/* Main Content Area - Responsive Layout with Swipe Gestures */}
       <div

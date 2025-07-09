@@ -1,10 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, User, MoreVertical, AlertCircle, Clock, CheckCircle, Users, Flag, Bug, Lightbulb, Zap, Settings, FileText, Target, Edit, Eye, UserPlus, Tag, Trash2 } from 'lucide-react';
+import { Calendar, User, MoreVertical, AlertCircle, Clock, CheckCircle, Users, Flag, Bug, Lightbulb, Zap, Settings, FileText, Target, Edit, Eye, UserPlus, Tag, Trash2, Paperclip } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 import TaskModal from './task-modal';
 import TaskDetailModal from '../tasks/task-detail-modal';
 import { MilestoneBadge } from '@/components/milestones/MilestoneIndicator';
@@ -86,35 +104,9 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
     transform: CSS.Translate.toString(transform),
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return 'bg-red-500 text-white border-red-500';
-      case 'high':
-        return 'bg-orange-500 text-white border-orange-500';
-      case 'medium':
-        return 'bg-yellow-500 text-white border-yellow-500';
-      case 'low':
-        return 'bg-green-500 text-white border-green-500';
-      default:
-        return 'bg-gray-500 text-white border-gray-500';
-    }
-  };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'urgent':
-        return <AlertCircle className="h-3 w-3" />;
-      case 'high':
-        return <Flag className="h-3 w-3" />;
-      case 'medium':
-        return <Clock className="h-3 w-3" />;
-      case 'low':
-        return <CheckCircle className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
-    }
-  };
+
+
 
   const getTaskTypeIcon = (tags: string[] = []) => {
     // Check for task type in tags
@@ -300,138 +292,197 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'urgent':
+        return 'destructive';
+      case 'high':
+        return 'secondary';
+      case 'medium':
+        return 'outline';
+      case 'low':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'urgent':
+        return <AlertCircle className="h-3 w-3" />;
+      case 'high':
+        return <Flag className="h-3 w-3" />;
+      case 'medium':
+        return <Target className="h-3 w-3" />;
+      case 'low':
+        return <Clock className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div
+    <Card
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
       onClick={handleTaskClick}
-      className={`mobile-task-card mobile-draggable group bg-card border rounded-lg p-3 md:p-4 cursor-pointer touch-manipulation
-        hover:shadow-xl hover:shadow-primary/10 hover:scale-[1.02] hover:-translate-y-1
-        transition-all duration-300 ease-out mobile-gpu-accelerated
-        ${task.completed ? 'opacity-75 bg-muted border-muted-foreground/30' : ''}
+      className={`group cursor-pointer touch-manipulation transition-all duration-300 ease-out
+        hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] hover:-translate-y-1
+        ${task.completed ? 'opacity-75 bg-muted/50' : 'bg-card'}
         ${isDragging ?
-          'opacity-60 rotate-3 scale-110 shadow-2xl shadow-primary/30 z-50 ring-2 ring-primary/50 bg-gradient-to-br from-primary/5 to-card border-primary/30' :
+          'opacity-60 rotate-2 scale-105 shadow-2xl shadow-primary/30 z-50 ring-2 ring-primary/50 border-primary/50' :
           ''
         }
-        ${!task.completed && isOverdue ? 'border-red-300 shadow-red-100 hover:border-red-400' :
-          !task.completed && isDueToday ? 'border-orange-300 shadow-orange-100 hover:border-orange-400' :
-          !task.completed && isDueTomorrow ? 'border-yellow-300 shadow-yellow-100 hover:border-yellow-400' :
-          !task.completed && isDueSoon ? 'border-blue-300 shadow-blue-100 hover:border-blue-400' :
-          'border-gray-200 hover:border-blue-300'}
+        ${!task.completed && isOverdue ? 'border-destructive/50 shadow-destructive/10' :
+          !task.completed && isDueToday ? 'border-orange-400/50 shadow-orange-400/10' :
+          !task.completed && isDueTomorrow ? 'border-yellow-400/50 shadow-yellow-400/10' :
+          !task.completed && isDueSoon ? 'border-blue-400/50 shadow-blue-400/10' :
+          'border-border hover:border-primary/50'}
         ${isLoadingDetails ? 'opacity-50' : ''}
-        hover:bg-gradient-to-br hover:from-white hover:to-gray-50/30
       `}
     >
-      {/* Task Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1 pr-2">
-          {isEditingTitle ? (
-            <input
-              type="text"
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={handleTitleKeyDown}
-              className="font-semibold text-sm leading-tight text-gray-900 mb-1 w-full bg-transparent border-b border-blue-300 focus:outline-none focus:border-blue-500"
-              autoFocus
-            />
-          ) : (
-            <h4
-              className={`font-semibold text-sm leading-tight mb-1 cursor-pointer hover:text-blue-600 transition-colors ${
-                task.completed ? 'text-gray-500 line-through' : 'text-gray-900'
-              }`}
-              onDoubleClick={handleTitleDoubleClick}
-              title="Double-click to edit"
-            >
-              {task.title}
-            </h4>
-          )}
-          {task.description && (
-            <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-              {task.description.length > 80 ? `${task.description.substring(0, 80)}...` : task.description}
-            </p>
-          )}
-        </div>
-
-        {/* Quick Actions - Mobile optimized (always visible on mobile) */}
-        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 mr-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // Toggle task completion
-              onUpdate(task.id, { completed: !task.completed });
-            }}
-            className={`touch-target p-1 rounded transition-colors ${
-              task.completed
-                ? 'hover:bg-muted text-muted-foreground'
-                : 'hover:bg-green-100 text-green-600'
-            }`}
-            title={task.completed ? "Mark Incomplete" : "Mark Complete"}
-          >
-            <CheckCircle className={`h-3 w-3 ${task.completed ? 'fill-current' : ''}`} />
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowEditModal(true);
-            }}
-            className="p-1 hover:bg-blue-100 rounded transition-colors"
-            title="Quick Edit"
-          >
-            <Edit className="h-3 w-3 text-blue-600" />
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleViewDetails();
-            }}
-            className="p-1 hover:bg-indigo-100 rounded transition-colors"
-            title="View Details"
-          >
-            <Eye className="h-3 w-3 text-indigo-600" />
-          </button>
-        </div>
-
-        <div className="relative task-menu">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMenu(!showMenu);
-            }}
-            className="touch-target p-1 hover:bg-muted rounded-md transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
-          >
-            <MoreVertical className="h-4 w-4 text-muted-foreground" />
-          </button>
-
-          {showMenu && (
-            <div className="absolute right-0 top-8 bg-card border rounded-md shadow-lg z-20 min-w-32 mobile-modal-overlay">
-              <button
-                onClick={() => {
-                  setShowEditModal(true);
-                  setShowMenu(false);
-                }}
-                className="touch-target-comfortable w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors"
+      <CardContent className="p-4 space-y-3">
+        {/* Task Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                className="font-semibold text-sm leading-tight w-full bg-transparent border-b border-primary focus:outline-none focus:border-primary"
+                autoFocus
+              />
+            ) : (
+              <h4
+                className={`font-semibold text-sm leading-tight cursor-pointer hover:text-primary transition-colors ${
+                  task.completed ? 'text-muted-foreground line-through' : 'text-foreground'
+                }`}
+                onDoubleClick={handleTitleDoubleClick}
+                title="Double-click to edit"
               >
-                Edit
-              </button>
-              <button
-                onClick={() => {
+                {task.title}
+              </h4>
+            )}
+            {task.description && (
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1">
+                {task.description.length > 80 ? `${task.description.substring(0, 80)}...` : task.description}
+              </p>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200 ml-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdate(task.id, { completed: !task.completed });
+                    }}
+                  >
+                    <CheckCircle className={`h-3 w-3 ${task.completed ? 'fill-current text-green-600' : 'text-muted-foreground'}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {task.completed ? "Mark Incomplete" : "Mark Complete"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditModal(true);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Quick Edit</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewDetails();
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>View Details</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+        </div>
+
+          <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEditModal(true);
+                }}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Task
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewDetails();
+                }}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (confirm('Are you sure you want to delete this task?')) {
                     onDelete(task.id);
                   }
-                  setShowMenu(false);
                 }}
-                className="touch-target-comfortable w-full px-3 py-2 text-left text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                className="text-destructive focus:text-destructive"
               >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Task
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
       </div>
 
       {/* Task Description */}
@@ -441,21 +492,26 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
         </p>
       )}
 
-      {/* Task Metadata */}
-      <div className="space-y-3">
-        {/* Priority and Status Row */}
+        {/* Task Metadata */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+            <Badge variant={getPriorityColor(task.priority)} className="text-xs">
               {getPriorityIcon(task.priority)}
-              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-            </span>
+              <span className="ml-1">{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+            </Badge>
 
             {/* Task Type Icon */}
             {getTaskTypeIcon(task.tags) && (
-              <div className="flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full" title="Task Type">
-                {getTaskTypeIcon(task.tags)}
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center justify-center w-6 h-6 bg-muted rounded-full">
+                      {getTaskTypeIcon(task.tags)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Task Type</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
 
@@ -463,10 +519,10 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
           {task.due_date && (() => {
             const dueDateInfo = getDueDateInfo();
             return dueDateInfo ? (
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${dueDateInfo.color}`}>
-                <span className="text-xs">{dueDateInfo.icon}</span>
-                <span>{dueDateInfo.text}</span>
-              </div>
+              <Badge variant="outline" className={`text-xs ${dueDateInfo.color}`}>
+                <span className="mr-1">{dueDateInfo.icon}</span>
+                {dueDateInfo.text}
+              </Badge>
             ) : null;
           })()}
         </div>
@@ -485,21 +541,17 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
         )}
 
         {/* Progress Indicators */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             {/* Checklist Progress */}
             {task.checklist_progress && task.checklist_progress.total > 0 && (
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <CheckCircle className="h-3 w-3 flex-shrink-0" />
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="flex-1 bg-gray-200 rounded-full h-1.5 min-w-[40px]">
-                    <div
-                      className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${(task.checklist_progress.completed / task.checklist_progress.total) * 100}%`
-                      }}
-                    />
-                  </div>
+                  <Progress
+                    value={(task.checklist_progress.completed / task.checklist_progress.total) * 100}
+                    className="flex-1 h-1.5 min-w-[40px]"
+                  />
                   <span className="text-xs font-medium flex-shrink-0">
                     {task.checklist_progress.completed}/{task.checklist_progress.total}
                   </span>
@@ -509,12 +561,19 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
 
             {/* Attachments Count */}
             {task.attachments && task.attachments.length > 0 && (
-              <div className="flex items-center gap-1">
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-                <span>{task.attachments.length}</span>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <Paperclip className="h-3 w-3" />
+                      <span>{task.attachments.length}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {task.attachments.length} attachment{task.attachments.length > 1 ? 's' : ''}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
 
@@ -529,52 +588,52 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
         {task.assignments && task.assignments.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 text-gray-400" />
-              <span className="text-xs text-gray-500">{task.assignments.length} assigned</span>
+              <Users className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{task.assignments.length} assigned</span>
             </div>
 
             {/* User Avatars */}
             <div className="flex -space-x-1">
               {task.assignments.slice(0, 3).map((assignment, index) => (
-                <div
-                  key={assignment.user_id}
-                  className="relative"
-                  title={assignment.user_profile?.full_name || 'Assigned User'}
-                >
-                  {assignment.user_profile?.avatar_url ? (
-                    <img
-                      src={assignment.user_profile.avatar_url}
-                      alt={assignment.user_profile.full_name || 'User'}
-                      className="h-6 w-6 rounded-full border-2 border-white bg-gray-100"
-                    />
-                  ) : (
-                    <div className="h-6 w-6 rounded-full border-2 border-white bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-                      <span className="text-xs font-medium text-white">
-                        {assignment.user_profile?.full_name?.charAt(0) || 'U'}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <TooltipProvider key={assignment.user_id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Avatar className="h-6 w-6 border-2 border-background">
+                        <AvatarImage
+                          src={assignment.user_profile?.avatar_url}
+                          alt={assignment.user_profile?.full_name || 'User'}
+                        />
+                        <AvatarFallback className="text-xs">
+                          {assignment.user_profile?.full_name?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {assignment.user_profile?.full_name || 'Assigned User'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))}
               {task.assignments.length > 3 && (
-                <div className="h-6 w-6 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center">
-                  <span className="text-xs font-medium text-gray-600">
-                    +{task.assignments.length - 3}
-                  </span>
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Avatar className="h-6 w-6 border-2 border-background">
+                        <AvatarFallback className="text-xs bg-muted">
+                          +{task.assignments.length - 3}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {task.assignments.length - 3} more assigned
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           </div>
         )}
-      </div>
-
-      {/* Click outside to close menu */}
-      {showMenu && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setShowMenu(false)}
-        />
-      )}
+      </CardContent>
 
       {/* Task Edit Modal */}
       <TaskModal
@@ -592,6 +651,6 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
         onClose={handleCloseDetailModal}
         onUpdate={handleDetailTaskUpdate}
       />
-    </div>
+    </Card>
   );
 }

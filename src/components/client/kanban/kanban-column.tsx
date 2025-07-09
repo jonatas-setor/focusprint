@@ -1,8 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, MoreVertical } from 'lucide-react';
+import { Plus, MoreVertical, GripVertical } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import TaskCard from './task-card';
 import TaskModal from './task-modal';
 import ColumnSettingsModal from './column-settings-modal';
