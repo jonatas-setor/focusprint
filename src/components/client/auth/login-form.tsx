@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Github, ChevronDown, ChevronUp, Check } from "lucide-react";
 
 export default function ClientLoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -128,10 +130,11 @@ export default function ClientLoginForm() {
       addDebugLog("🔄 Redirecionando para dashboard...");
       setLoginSteps((prev) => ({ ...prev, redirecting: true }));
 
-      // Aguardar um pouco para mostrar o debug
+      // Aguardar um pouco para mostrar o debug e garantir que a sessão seja salva
       setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1000);
+        addDebugLog("🚀 Executando redirecionamento...");
+        router.push("/dashboard");
+      }, 1500);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Erro ao fazer login";
