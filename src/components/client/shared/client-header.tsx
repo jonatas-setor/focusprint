@@ -1,27 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  User,
-  Settings,
-  LogOut,
-  Crown,
-  Shield,
-  Users
-} from 'lucide-react';
-import { ClientProfile } from '@/lib/auth/server';
-import { createClient } from '@/lib/auth/client-auth';
-import QuickProjectSwitcher from '@/components/client/navigation/quick-project-switcher';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User, Settings, LogOut, Crown, Shield, Users } from "lucide-react";
+import { ClientProfile } from "@/lib/auth/types";
+import { createClient } from "@/lib/supabase/client";
+import QuickProjectSwitcher from "@/components/client/navigation/quick-project-switcher";
 
 interface ClientHeaderProps {
   profile: ClientProfile;
@@ -36,18 +29,18 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
       setIsLoggingOut(true);
       const supabase = createClient();
       await supabase.auth.signOut();
-      window.location.href = '/auth/login';
+      window.location.href = "/login";
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
       setIsLoggingOut(false);
     }
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'owner':
+      case "owner":
         return <Crown className="h-3 w-3" />;
-      case 'admin':
+      case "admin":
         return <Shield className="h-3 w-3" />;
       default:
         return <Users className="h-3 w-3" />;
@@ -56,23 +49,23 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'owner':
-        return 'default';
-      case 'admin':
-        return 'secondary';
+      case "owner":
+        return "default";
+      case "admin":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
   const getPlanBadgeVariant = (planType: string) => {
     switch (planType) {
-      case 'business':
-        return 'default';
-      case 'pro':
-        return 'secondary';
+      case "business":
+        return "default";
+      case "pro":
+        return "secondary";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
@@ -90,7 +83,8 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
                 {profile.client.plan_type.toUpperCase()}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {profile.client.max_users} usuários • {profile.client.max_projects} projetos
+                {profile.client.max_users} usuários •{" "}
+                {profile.client.max_projects} projetos
               </span>
             </div>
           </div>
@@ -108,7 +102,10 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
             </p>
             <div className="flex items-center justify-end space-x-1">
               {getRoleIcon(profile.role)}
-              <Badge variant={getRoleBadgeVariant(profile.role)} className="text-xs">
+              <Badge
+                variant={getRoleBadgeVariant(profile.role)}
+                className="text-xs"
+              >
                 {profile.role}
               </Badge>
             </div>
@@ -117,14 +114,18 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full"
+              >
                 <Avatar className="h-10 w-10">
-                  <AvatarImage 
-                    src={profile.avatar_url} 
-                    alt={`${profile.first_name} ${profile.last_name}`} 
+                  <AvatarImage
+                    src={profile.avatar_url}
+                    alt={`${profile.first_name} ${profile.last_name}`}
                   />
                   <AvatarFallback>
-                    {profile.first_name.charAt(0)}{profile.last_name.charAt(0)}
+                    {profile.first_name.charAt(0)}
+                    {profile.last_name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -150,12 +151,9 @@ export function ClientHeader({ profile, currentProjectId }: ClientHeaderProps) {
                 <span>Configurações</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-              >
+              <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>{isLoggingOut ? 'Saindo...' : 'Sair'}</span>
+                <span>{isLoggingOut ? "Saindo..." : "Sair"}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
