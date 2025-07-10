@@ -183,31 +183,44 @@ async function clientMiddleware(request: NextRequest, response: NextResponse) {
   });
 
   try {
+    console.log(`🔍 [MIDDLEWARE] Checking dashboard access for: ${pathname}`);
+
     // Check if user is authenticated
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
 
+    console.log(`🔍 [MIDDLEWARE] Auth check result:`, {
+      hasUser: !!user,
+      hasError: !!error,
+      userId: user?.id,
+      email: user?.email,
+      emailConfirmed: !!user?.email_confirmed_at,
+      errorMessage: error?.message,
+    });
+
     if (error || !user) {
-      // Not authenticated - redirect to login
+      console.log(`❌ [MIDDLEWARE] Not authenticated, redirecting to login`);
       const loginUrl = new URL("/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
 
     // Check if email is confirmed
     if (!user.email_confirmed_at) {
-      // Email not confirmed - redirect to confirmation page
+      console.log(
+        `❌ [MIDDLEWARE] Email not confirmed, redirecting to confirmation`
+      );
       const confirmUrl = new URL("/auth/confirm-email", request.url);
       return NextResponse.redirect(confirmUrl);
     }
 
-    // TODO: Add client profile validation here
-    // For now, allow any authenticated user with confirmed email
-
+    console.log(
+      `✅ [MIDDLEWARE] User authenticated and confirmed, allowing access`
+    );
     return response;
   } catch (err) {
-    console.error("Client middleware error:", err);
+    console.error("❌ [MIDDLEWARE] Client middleware error:", err);
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
