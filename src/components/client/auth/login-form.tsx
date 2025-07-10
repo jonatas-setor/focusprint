@@ -132,7 +132,7 @@ export default function ClientLoginForm() {
 
       // Aguardar um pouco para mostrar o debug e garantir que a sessão seja salva
       setTimeout(() => {
-        addDebugLog("🚀 Executando redirecionamento...");
+        addDebugLog("🚀 EXECUTANDO REDIRECIONAMENTO COM ROUTER [v2]...");
         router.push("/dashboard");
       }, 1500);
     } catch (err) {
