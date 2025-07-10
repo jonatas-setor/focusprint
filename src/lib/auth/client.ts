@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/client';
-import { User } from '@supabase/supabase-js';
+import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export interface ClientAuthUser {
   id: string;
   email: string;
-  user_type: 'platform_admin' | 'client_user';
+  user_type: "platform_admin" | "client_user";
   client_id?: string;
 }
 
@@ -18,59 +18,76 @@ export class ClientAuthService {
       const supabase = createClient();
 
       // Get authenticated user
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
       if (error || !user || !user.email) {
-        console.log('❌ No user found or error:', error);
+        console.log("❌ No user found or error:", error);
         return null;
       }
 
-      console.log('✅ User found, checking profiles...', { email: user.email });
+      console.log("✅ User found, checking profiles...", { email: user.email });
 
       // Check if email is confirmed
       if (!user.email_confirmed_at) {
-        console.log('❌ Email not confirmed');
+        console.log("❌ Email not confirmed");
         return null;
+      }
+
+      // Check if user has admin role in metadata (legacy support)
+      const userMetadata = user.user_metadata || user.raw_user_meta_data || {};
+      if (userMetadata.role === "admin") {
+        console.log("✅ User has admin role in metadata, granting access");
+        return {
+          id: user.id,
+          email: user.email,
+          user_type: "platform_admin",
+          client_id: undefined,
+        };
       }
 
       // Get user profile to determine type
       const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('user_type, status')
-        .eq('id', user.id)
-        .eq('status', 'active')
+        .from("user_profiles")
+        .select("user_type, status")
+        .eq("id", user.id)
+        .eq("status", "active")
         .single();
 
       if (profileError || !userProfile) {
+        console.log("❌ No user profile found:", profileError);
         return null;
       }
 
       // Platform admins have access to client dashboard (multiple roles)
-      if (userProfile.user_type === 'platform_admin') {
+      if (userProfile.user_type === "platform_admin") {
         // Check if platform admin also has a client profile
         const { data: clientProfile } = await supabase
-          .from('client_profiles')
-          .select('client_id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
+          .from("client_profiles")
+          .select("client_id")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
           .single();
 
         return {
           id: user.id,
           email: user.email,
-          user_type: 'platform_admin',
+          user_type: "platform_admin",
           client_id: clientProfile?.client_id,
         };
       }
 
       // For client users, verify they have a valid client profile
-      if (userProfile.user_type === 'client_user') {
-        const { data: clientProfile, error: clientProfileError } = await supabase
-          .from('client_profiles')
-          .select('id, is_active, client_id')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single();
+      if (userProfile.user_type === "client_user") {
+        const { data: clientProfile, error: clientProfileError } =
+          await supabase
+            .from("client_profiles")
+            .select("id, is_active, client_id")
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .single();
 
         if (clientProfileError || !clientProfile) {
           return null;
@@ -79,7 +96,7 @@ export class ClientAuthService {
         return {
           id: user.id,
           email: user.email,
-          user_type: 'client_user',
+          user_type: "client_user",
           client_id: clientProfile.client_id,
         };
       }
@@ -87,7 +104,7 @@ export class ClientAuthService {
       // Invalid user type
       return null;
     } catch (error) {
-      console.error('❌ ClientAuthService.getCurrentUser error:', error);
+      console.error("❌ ClientAuthService.getCurrentUser error:", error);
       return null;
     }
   }
