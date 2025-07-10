@@ -574,578 +574,596 @@ export default function ClientRegisterForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Criar Conta no FocuSprint
-        </h2>
-        <p className="text-gray-600">
-          Preencha os dados abaixo para criar sua conta completa
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">FocuSprint</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Crie sua conta e comece a usar nossa plataforma de gestão de
+            projetos
+          </p>
+        </div>
 
-      {/* Status de configuração do Supabase */}
-      {!supabaseReady && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <div className="flex items-center">
-            <AlertCircle className="h-4 w-4 text-yellow-600 mr-2" />
-            <p className="text-sm text-yellow-700">
-              Configuração em andamento...
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Criar Conta no FocuSprint
+            </h2>
+            <p className="text-gray-600">
+              Preencha os dados abaixo para criar sua conta completa
             </p>
           </div>
-        </div>
-      )}
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <div className="flex items-center">
-            <AlertCircle className="h-4 w-4 text-red-600 mr-2" />
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
-          <div className="flex items-center">
-            <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-            <p className="text-sm text-green-600">{success}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Debug e Status do Onboarding */}
-      {(loading || debugLogs.length > 0) && (
-        <div className="mb-6 border border-gray-200 rounded-lg">
-          <div
-            className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer"
-            onClick={() => setShowDebug(!showDebug)}
-          >
-            <div className="flex items-center">
-              <div className="text-sm font-medium text-gray-700">
-                Status do Registro
+          {/* Status de configuração do Supabase */}
+          {!supabaseReady && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 text-yellow-600 mr-2" />
+                <p className="text-sm text-yellow-700">
+                  Configuração em andamento...
+                </p>
               </div>
-              {loading && (
-                <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-              )}
             </div>
-            {showDebug ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </div>
+          )}
 
-          {showDebug && (
-            <div className="p-4 border-t border-gray-200">
-              {/* Steps do Onboarding */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.userCreated ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Usuário Criado
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center">
+                <AlertCircle className="h-4 w-4 text-red-600 mr-2" />
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <p className="text-sm text-green-600">{success}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Debug e Status do Onboarding */}
+          {(loading || debugLogs.length > 0) && (
+            <div className="mb-6 border border-gray-200 rounded-lg">
+              <div
+                className="flex items-center justify-between p-4 bg-gray-50 cursor-pointer"
+                onClick={() => setShowDebug(!showDebug)}
+              >
+                <div className="flex items-center">
+                  <div className="text-sm font-medium text-gray-700">
+                    Status do Registro
                   </div>
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.userProfileCreated ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Perfil de Usuário
-                  </div>
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.clientCreated ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Cliente Criado
-                  </div>
+                  {loading && (
+                    <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.clientProfileCreated ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Perfil de Cliente
-                  </div>
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.teamCreated ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Time Criado
-                  </div>
-                  <div className="flex items-center text-sm">
-                    {onboardingSteps.emailSent ? (
-                      <Check className="h-4 w-4 text-green-600 mr-2" />
-                    ) : (
-                      <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
-                    )}
-                    Email Enviado
-                  </div>
-                </div>
+                {showDebug ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
               </div>
 
-              {/* Logs de Debug */}
-              {debugLogs.length > 0 && (
-                <div className="bg-gray-900 text-green-400 p-3 rounded text-xs font-mono max-h-40 overflow-y-auto">
-                  {debugLogs.map((log, index) => (
-                    <div key={index} className="mb-1">
-                      {log}
+              {showDebug && (
+                <div className="p-4 border-t border-gray-200">
+                  {/* Steps do Onboarding */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.userCreated ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Usuário Criado
+                      </div>
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.userProfileCreated ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Perfil de Usuário
+                      </div>
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.clientCreated ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Cliente Criado
+                      </div>
                     </div>
-                  ))}
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.clientProfileCreated ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Perfil de Cliente
+                      </div>
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.teamCreated ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Time Criado
+                      </div>
+                      <div className="flex items-center text-sm">
+                        {onboardingSteps.emailSent ? (
+                          <Check className="h-4 w-4 text-green-600 mr-2" />
+                        ) : (
+                          <div className="h-4 w-4 border-2 border-gray-300 rounded mr-2"></div>
+                        )}
+                        Email Enviado
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logs de Debug */}
+                  {debugLogs.length > 0 && (
+                    <div className="bg-gray-900 text-green-400 p-3 rounded text-xs font-mono max-h-40 overflow-y-auto">
+                      {debugLogs.map((log, index) => (
+                        <div key={index} className="mb-1">
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
-        </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Formulário */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Dados Pessoais
-          </h3>
-
-          <form onSubmit={handleEmailRegister} className="space-y-6">
-            {/* Dados Pessoais */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="firstName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nome *
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.firstName
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-300 focus:border-blue-500"
-                  }`}
-                  placeholder="Seu nome"
-                  required
-                />
-                {validationErrors.firstName && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {validationErrors.firstName}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Sobrenome *
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    handleInputChange("lastName", e.target.value)
-                  }
-                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.lastName
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-300 focus:border-blue-500"
-                  }`}
-                  placeholder="Seu sobrenome"
-                  required
-                />
-                {validationErrors.lastName && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {validationErrors.lastName}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Email */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Formulário */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email *
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  validationErrors.email
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
-                placeholder="seu@email.com"
-                required
-              />
-              {validationErrors.email && (
-                <p className="mt-1 text-xs text-red-600">
-                  {validationErrors.email}
-                </p>
-              )}
-            </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Dados Pessoais
+              </h3>
 
-            {/* Senhas */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Senha *
-                </label>
-                <div className="relative">
+              <form onSubmit={handleEmailRegister} className="space-y-6">
+                {/* Dados Pessoais */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="firstName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Nome *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
+                      className={`mt-2 block w-full h-12 px-4 py-3 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        validationErrors.firstName
+                          ? "border-red-300 focus:ring-red-500"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                      placeholder="Seu nome"
+                      required
+                    />
+                    {validationErrors.firstName && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {validationErrors.firstName}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Sobrenome *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
+                      className={`mt-2 block w-full h-12 px-4 py-3 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                        validationErrors.lastName
+                          ? "border-red-300 focus:ring-red-500"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                      placeholder="Seu sobrenome"
+                      required
+                    />
+                    {validationErrors.lastName && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {validationErrors.lastName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email *
+                  </label>
                   <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
-                    className={`mt-1 block w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      validationErrors.password
-                        ? "border-red-300 focus:border-red-500"
-                        : "border-gray-300 focus:border-blue-500"
+                    type="email"
+                    id="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className={`mt-2 block w-full h-12 px-4 py-3 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                      validationErrors.email
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Sua senha"
+                    placeholder="seu@email.com"
                     required
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
+                  {validationErrors.email && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {validationErrors.email}
+                    </p>
+                  )}
                 </div>
-                {validationErrors.password && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {validationErrors.password}
-                  </p>
-                )}
-              </div>
 
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Confirmar Senha *
-                </label>
-                <div className="relative">
+                {/* Senhas */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Senha *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
+                        className={`mt-2 block w-full h-12 px-4 py-3 pr-12 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                          validationErrors.password
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                        placeholder="Sua senha"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 rounded-r-lg transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {validationErrors.password && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {validationErrors.password}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="confirmPassword"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Confirmar Senha *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        id="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={(e) =>
+                          handleInputChange("confirmPassword", e.target.value)
+                        }
+                        className={`mt-2 block w-full h-12 px-4 py-3 pr-12 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                          validationErrors.confirmPassword
+                            ? "border-red-300 focus:ring-red-500"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                        placeholder="Confirme sua senha"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-gray-50 rounded-r-lg transition-colors"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5 text-gray-400" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {validationErrors.confirmPassword && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {validationErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tipo de Cliente */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Tipo de Conta *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      {
+                        value: "personal",
+                        label: "Uso Pessoal",
+                        desc: "Para projetos pessoais",
+                      },
+                      {
+                        value: "company",
+                        label: "Empresa",
+                        desc: "Para empresas e negócios",
+                      },
+                      {
+                        value: "organization",
+                        label: "Organização",
+                        desc: "ONGs, associações",
+                      },
+                      {
+                        value: "department",
+                        label: "Departamento",
+                        desc: "Setor de uma empresa",
+                      },
+                    ].map((type) => (
+                      <div
+                        key={type.value}
+                        className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all ${
+                          formData.clientType === type.value
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                        onClick={() =>
+                          handleInputChange("clientType", type.value)
+                        }
+                      >
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 mr-3">
+                            {getClientTypeIcon(type.value)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-gray-900">
+                              {type.label}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {type.desc}
+                            </div>
+                          </div>
+                          {formData.clientType === type.value && (
+                            <Check className="h-4 w-4 text-blue-600" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nome da Conta/Empresa */}
+                <div>
+                  <label
+                    htmlFor="clientName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    {formData.clientType === "personal"
+                      ? "Nome da Conta *"
+                      : formData.clientType === "company"
+                      ? "Nome da Empresa *"
+                      : formData.clientType === "organization"
+                      ? "Nome da Organização *"
+                      : "Nome do Departamento *"}
+                  </label>
                   <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    id="confirmPassword"
-                    value={formData.confirmPassword}
+                    type="text"
+                    id="clientName"
+                    value={formData.clientName}
                     onChange={(e) =>
-                      handleInputChange("confirmPassword", e.target.value)
+                      handleInputChange("clientName", e.target.value)
                     }
-                    className={`mt-1 block w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      validationErrors.confirmPassword
-                        ? "border-red-300 focus:border-red-500"
-                        : "border-gray-300 focus:border-blue-500"
+                    className={`mt-2 block w-full h-12 px-4 py-3 border rounded-lg shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
+                      validationErrors.clientName
+                        ? "border-red-300 focus:ring-red-500"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder="Confirme sua senha"
+                    placeholder={
+                      formData.clientType === "personal"
+                        ? "Ex: João Silva"
+                        : formData.clientType === "company"
+                        ? "Ex: Minha Empresa Ltda"
+                        : formData.clientType === "organization"
+                        ? "Ex: ONG Esperança"
+                        : "Ex: TI - Empresa X"
+                    }
                     required
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
+                  {validationErrors.clientName && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {validationErrors.clientName}
+                    </p>
+                  )}
                 </div>
-                {validationErrors.confirmPassword && (
-                  <p className="mt-1 text-xs text-red-600">
-                    {validationErrors.confirmPassword}
-                  </p>
-                )}
-              </div>
+
+                {/* Botão de Submit */}
+                <button
+                  type="submit"
+                  disabled={
+                    loading ||
+                    !supabaseReady ||
+                    Object.keys(validationErrors).length > 0
+                  }
+                  className="w-full h-12 flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {loading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Criando conta...
+                    </div>
+                  ) : (
+                    "Criar Conta"
+                  )}
+                </button>
+              </form>
             </div>
 
-            {/* Tipo de Cliente */}
+            {/* Seção de Planos */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Tipo de Conta *
-              </label>
-              <div className="grid grid-cols-2 gap-3">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Escolha seu Plano
+              </h3>
+
+              <div className="space-y-4">
                 {[
                   {
-                    value: "personal",
-                    label: "Uso Pessoal",
-                    desc: "Para projetos pessoais",
+                    id: "free",
+                    name: "Free",
+                    price: "Gratuito",
+                    description: "Perfeito para começar",
+                    features: [
+                      "5 usuários",
+                      "3 projetos",
+                      "100MB storage",
+                      "Suporte por email",
+                    ],
+                    popular: false,
                   },
                   {
-                    value: "company",
-                    label: "Empresa",
-                    desc: "Para empresas e negócios",
+                    id: "pro",
+                    name: "Pro",
+                    price: "R$ 97/mês",
+                    description: "14 dias grátis",
+                    features: [
+                      "15 usuários",
+                      "10 projetos",
+                      "5GB storage",
+                      "Videochamadas",
+                      "Relatórios",
+                    ],
+                    popular: true,
                   },
                   {
-                    value: "organization",
-                    label: "Organização",
-                    desc: "ONGs, associações",
+                    id: "business",
+                    name: "Business",
+                    price: "R$ 399/mês",
+                    description: "14 dias grátis",
+                    features: [
+                      "50 usuários",
+                      "50 projetos",
+                      "20GB storage",
+                      "Integrações avançadas",
+                      "Suporte prioritário",
+                    ],
+                    popular: false,
                   },
-                  {
-                    value: "department",
-                    label: "Departamento",
-                    desc: "Setor de uma empresa",
-                  },
-                ].map((type) => (
+                ].map((plan) => (
                   <div
-                    key={type.value}
-                    className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all ${
-                      formData.clientType === type.value
+                    key={plan.id}
+                    className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      formData.planType === plan.id
                         ? "border-blue-500 bg-blue-50"
                         : "border-gray-200 hover:border-gray-300"
-                    }`}
-                    onClick={() => handleInputChange("clientType", type.value)}
+                    } ${getPlanColor(plan.id)}`}
+                    onClick={() => handleInputChange("planType", plan.id)}
                   >
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 mr-3">
-                        {getClientTypeIcon(type.value)}
+                    {plan.popular && (
+                      <div className="absolute -top-2 left-4 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                        Mais Popular
                       </div>
+                    )}
+
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-900">
-                          {type.label}
+                        <div className="flex items-center">
+                          <h4 className="text-lg font-semibold text-gray-900">
+                            {plan.name}
+                          </h4>
+                          {formData.planType === plan.id && (
+                            <Check className="h-5 w-5 text-blue-600 ml-2" />
+                          )}
                         </div>
-                        <div className="text-xs text-gray-500">{type.desc}</div>
+                        <div className="text-2xl font-bold text-gray-900 mt-1">
+                          {plan.price}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-3">
+                          {plan.description}
+                        </div>
+                        <ul className="space-y-1">
+                          {plan.features.map((feature, index) => (
+                            <li
+                              key={index}
+                              className="flex items-center text-sm text-gray-600"
+                            >
+                              <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      {formData.clientType === type.value && (
-                        <Check className="h-4 w-4 text-blue-600" />
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Nome da Conta/Empresa */}
-            <div>
-              <label
-                htmlFor="clientName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                {formData.clientType === "personal"
-                  ? "Nome da Conta *"
-                  : formData.clientType === "company"
-                  ? "Nome da Empresa *"
-                  : formData.clientType === "organization"
-                  ? "Nome da Organização *"
-                  : "Nome do Departamento *"}
-              </label>
-              <input
-                type="text"
-                id="clientName"
-                value={formData.clientName}
-                onChange={(e) =>
-                  handleInputChange("clientName", e.target.value)
-                }
-                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  validationErrors.clientName
-                    ? "border-red-300 focus:border-red-500"
-                    : "border-gray-300 focus:border-blue-500"
-                }`}
-                placeholder={
-                  formData.clientType === "personal"
-                    ? "Ex: João Silva"
-                    : formData.clientType === "company"
-                    ? "Ex: Minha Empresa Ltda"
-                    : formData.clientType === "organization"
-                    ? "Ex: ONG Esperança"
-                    : "Ex: TI - Empresa X"
-                }
-                required
-              />
-              {validationErrors.clientName && (
-                <p className="mt-1 text-xs text-red-600">
-                  {validationErrors.clientName}
+              {/* GitHub Register */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleGithubRegister}
+                  disabled={githubLoading}
+                  className="w-full h-12 flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200"
+                >
+                  {githubLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 mr-3"></div>
+                  ) : (
+                    <Github className="h-5 w-5 mr-3" />
+                  )}
+                  Continuar com GitHub
+                </button>
+                <p className="mt-3 text-sm text-gray-500 text-center">
+                  GitHub login permite acesso rápido e seguro
                 </p>
-              )}
-            </div>
-
-            {/* Botão de Submit */}
-            <button
-              type="submit"
-              disabled={
-                loading ||
-                !supabaseReady ||
-                Object.keys(validationErrors).length > 0
-              }
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Criando conta...
-                </div>
-              ) : (
-                "Criar Conta"
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Seção de Planos */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Escolha seu Plano
-          </h3>
-
-          <div className="space-y-4">
-            {[
-              {
-                id: "free",
-                name: "Free",
-                price: "Gratuito",
-                description: "Perfeito para começar",
-                features: [
-                  "5 usuários",
-                  "3 projetos",
-                  "100MB storage",
-                  "Suporte por email",
-                ],
-                popular: false,
-              },
-              {
-                id: "pro",
-                name: "Pro",
-                price: "R$ 97/mês",
-                description: "14 dias grátis",
-                features: [
-                  "15 usuários",
-                  "10 projetos",
-                  "5GB storage",
-                  "Videochamadas",
-                  "Relatórios",
-                ],
-                popular: true,
-              },
-              {
-                id: "business",
-                name: "Business",
-                price: "R$ 399/mês",
-                description: "14 dias grátis",
-                features: [
-                  "50 usuários",
-                  "50 projetos",
-                  "20GB storage",
-                  "Integrações avançadas",
-                  "Suporte prioritário",
-                ],
-                popular: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                  formData.planType === plan.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${getPlanColor(plan.id)}`}
-                onClick={() => handleInputChange("planType", plan.id)}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-2 left-4 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                    Mais Popular
-                  </div>
-                )}
-
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center">
-                      <h4 className="text-lg font-semibold text-gray-900">
-                        {plan.name}
-                      </h4>
-                      {formData.planType === plan.id && (
-                        <Check className="h-5 w-5 text-blue-600 ml-2" />
-                      )}
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900 mt-1">
-                      {plan.price}
-                    </div>
-                    <div className="text-sm text-gray-600 mb-3">
-                      {plan.description}
-                    </div>
-                    <ul className="space-y-1">
-                      {plan.features.map((feature, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center text-sm text-gray-600"
-                        >
-                          <Check className="h-3 w-3 text-green-500 mr-2 flex-shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
               </div>
-            ))}
-          </div>
-
-          {/* GitHub Register */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={handleGithubRegister}
-              disabled={githubLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-            >
-              {githubLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-              ) : (
-                <Github className="h-4 w-4 mr-2" />
-              )}
-              Continuar com GitHub
-            </button>
-            <p className="mt-2 text-xs text-gray-500 text-center">
-              GitHub login permite acesso rápido e seguro
-            </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Link para Login */}
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-600">
-          Já tem uma conta?{" "}
-          <a
-            href="/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
-          >
-            Fazer login
-          </a>
-        </p>
+        {/* Link para Login */}
+        <div className="mt-12 text-center">
+          <p className="text-base text-gray-600">
+            Já tem uma conta?{" "}
+            <a
+              href="/login"
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+            >
+              Fazer login
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
