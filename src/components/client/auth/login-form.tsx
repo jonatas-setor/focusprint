@@ -110,7 +110,7 @@ export default function ClientLoginForm() {
       const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
-        .eq("user_id", data.user.id)
+        .eq("id", data.user.id)
         .single();
 
       if (profileError) {
