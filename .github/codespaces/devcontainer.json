@@ -1,0 +1,40 @@
+{
+  "name": "FocusPrint Optimized",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode", 
+        "ms-vscode.vscode-typescript-next",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-eslint"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.preferences.importModuleSpecifier": "relative"
+      }
+    }
+  },
+
+  "forwardPorts": [3001],
+  "portsAttributes": {
+    "3001": {
+      "label": "FocusPrint Dev",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "npm install && echo 'Ready! Run: npm run dev'",
+  "remoteUser": "node"
+}
