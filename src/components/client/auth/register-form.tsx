@@ -545,11 +545,6 @@ export default function ClientRegisterForm() {
     }
   };
 
-  // Funções de validação
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
   const validatePassword = (password: string) => {
     const errors = [];
     if (password.length < 8) errors.push("mínimo 8 caracteres");
@@ -1168,5 +1163,3 @@ export default function ClientRegisterForm() {
     </div>
   );
 }
-
-export default RegisterForm;
