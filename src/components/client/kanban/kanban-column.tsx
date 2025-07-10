@@ -143,53 +143,79 @@ export default function KanbanColumn({
   };
 
   return (
-    <div className="mobile-kanban-column w-72 sm:w-80 flex-shrink-0">
-      <div className="bg-background border rounded-lg h-full flex flex-col mobile-optimized">
-        {/* Column Header - Mobile optimized */}
-        <div className="mobile-kanban-column-header p-3 md:p-4 border-b">
+    <div className="mobile-kanban-column w-64 sm:w-72 md:w-80 flex-shrink-0">
+      <Card className="h-full flex flex-col mobile-optimized shadow-sm hover:shadow-md transition-all duration-200 border-border/50">
+        {/* Enhanced Column Header */}
+        <CardHeader className="mobile-kanban-column-header p-3 sm:p-4 pb-2 sm:pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
+                className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm"
                 style={{ backgroundColor: column.color }}
               />
-              <h3 className="font-medium text-sm md:text-base truncate">{column.name}</h3>
-              <span className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-full flex-shrink-0">
+              <h3 className="font-semibold text-sm md:text-base truncate text-foreground">
+                {column.name}
+              </h3>
+              <Badge
+                variant="secondary"
+                className="text-xs px-2.5 py-1 font-medium flex-shrink-0"
+              >
                 {tasks.length}
-              </span>
+              </Badge>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => setShowTaskModal(true)}
-                className="touch-target p-1 hover:bg-secondary rounded transition-colors"
-                title="Create detailed task"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setShowColumnSettings(true)}
-                className="touch-target p-1 hover:bg-secondary rounded transition-colors"
-                title="Column settings"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTaskModal(true)}
+                      className="touch-target h-8 w-8 p-0 hover:bg-secondary/80"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Create detailed task</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowColumnSettings(true)}
+                      className="touch-target h-8 w-8 p-0 hover:bg-secondary/80"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Column settings</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Tasks Area - Mobile optimized */}
-        <div
+        {/* Enhanced Tasks Area */}
+        <CardContent
           ref={setNodeRef}
-          className={`mobile-kanban-tasks mobile-drop-zone relative flex-1 p-3 md:p-4 space-y-2 md:space-y-3 overflow-y-auto touch-scroll transition-all duration-300 ease-out ${
+          className={`mobile-kanban-tasks mobile-drop-zone relative flex-1 p-4 space-y-3 overflow-y-auto touch-scroll transition-all duration-300 ease-out ${
             isOver
-              ? 'drag-over bg-primary/5 border-2 border-primary border-dashed shadow-inner ring-2 ring-primary/20'
+              ? 'drag-over bg-primary/5 border-2 border-primary border-dashed shadow-inner ring-2 ring-primary/20 rounded-lg'
               : 'border-2 border-transparent'
           }`}
         >
-          {/* Drop Zone Indicator - Mobile optimized */}
+          {/* Enhanced Drop Zone Indicator */}
           {isOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-sm z-10 pointer-events-none">
-              <div className="bg-primary text-primary-foreground px-3 md:px-4 py-2 rounded-lg shadow-lg font-medium text-sm animate-pulse">
+            <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-sm z-10 pointer-events-none rounded-lg">
+              <div className="bg-primary text-primary-foreground px-4 py-3 rounded-xl shadow-lg font-semibold text-sm animate-bounce border border-primary-foreground/20">
                 Drop task here
               </div>
             </div>
@@ -205,47 +231,51 @@ export default function KanbanColumn({
             />
           ))}
 
-              {/* Create Task Form - Mobile optimized */}
+              {/* Enhanced Create Task Form */}
               {showCreateForm ? (
-                <form onSubmit={handleCreateTask} className="space-y-2">
-                  <textarea
+                <form onSubmit={handleCreateTask} className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+                  <Textarea
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     placeholder="Enter task title..."
-                    className="w-full p-2 text-sm border rounded-md resize-none touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="resize-none touch-manipulation text-sm"
                     rows={2}
                     autoFocus
                   />
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       type="submit"
-                      className="touch-target-comfortable flex-1 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                      size="sm"
+                      className="touch-target-comfortable flex-1"
                     >
-                      Add
-                    </button>
-                    <button
+                      Add Task
+                    </Button>
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setShowCreateForm(false);
                         setNewTaskTitle('');
                       }}
-                      className="touch-target-comfortable flex-1 px-3 py-2 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
+                      className="touch-target-comfortable flex-1"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               ) : (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setShowCreateForm(true)}
-                  className="touch-target-large w-full p-3 text-sm text-muted-foreground border-2 border-dashed border-secondary rounded-md hover:border-primary/50 hover:text-foreground transition-colors"
+                  className="touch-target-large w-full p-4 text-sm text-muted-foreground border-2 border-dashed border-border/50 rounded-lg hover:border-primary/50 hover:text-foreground hover:bg-muted/50 transition-all duration-200 flex flex-col items-center gap-2"
                 >
-                  <Plus className="h-4 w-4 mx-auto mb-1" />
+                  <Plus className="h-4 w-4" />
                   <span>Add a task</span>
-                </button>
+                </Button>
               )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Task Creation Modal */}
       <TaskModal

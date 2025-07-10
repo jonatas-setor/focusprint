@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   DndContext,
   DragEndEvent,
@@ -60,16 +68,24 @@ interface Column {
   task_count: number;
 }
 
-interface KanbanBoardProps {
-  projectId: string;
+interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
 }
 
-export default function KanbanBoard({ projectId }: KanbanBoardProps) {
+interface KanbanBoardProps {
+  projectId: string;
+  project?: Project | null;
+}
+
+export default function KanbanBoard({ projectId, project }: KanbanBoardProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const { subscribeToTasks, subscribeToColumns } = useRealtime();
 
@@ -224,7 +240,6 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   const handleDragStart = (event: DragStartEvent) => {
     const taskId = event.active.id as string;
-    setDraggedTaskId(taskId);
 
     // Find and store the dragged task for overlay
     const task = tasks.find(t => t.id === taskId);
@@ -240,7 +255,6 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
     const { active, over } = event;
 
     // Clear drag state
-    setDraggedTaskId(null);
     setDraggedTask(null);
 
     // If no destination, do nothing
@@ -508,15 +522,47 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   return (
     <div className="h-full flex flex-col mobile-optimized">
-      {/* Header - Mobile optimized */}
-      <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base md:text-lg font-semibold">Kanban Board</h2>
+      {/* Enhanced Header with sophisticated design */}
+      <div className="flex items-center justify-between mb-6 md:mb-8 px-1">
+        <div className="flex items-center gap-4">
+          {project && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary/70" />
+                <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+                  {project.name}
+                </h1>
+              </div>
+              <div className="hidden sm:flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-medium capitalize px-2.5 py-1"
+                >
+                  {project.status}
+                </Badge>
+              </div>
+            </div>
+          )}
         </div>
-        <button className="touch-target-comfortable flex items-center gap-2 px-3 py-1.5 text-sm bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors">
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Add Column</span>
-        </button>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="default"
+                size="sm"
+                className="touch-target-comfortable flex items-center gap-2 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Add Column</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create a new column</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <DndContext
@@ -526,9 +572,9 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        {/* Mobile-optimized Kanban board */}
-        <div className="mobile-kanban-board flex-1 overflow-x-auto touch-scroll">
-          <div className="mobile-kanban-columns flex gap-4 md:gap-6 h-full min-w-max pb-4 md:pb-6">
+        {/* Enhanced Kanban board with responsive design */}
+        <div className="mobile-kanban-board flex-1 overflow-x-auto touch-scroll bg-gradient-to-br from-background to-muted/20 rounded-lg border border-border/50 shadow-sm">
+          <div className="mobile-kanban-columns flex gap-4 sm:gap-6 md:gap-8 h-full min-w-max p-4 sm:p-6 pb-6 sm:pb-8">
             {columns.map((column) => (
               <KanbanColumn
                 key={column.id}
@@ -543,22 +589,27 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
           </div>
         </div>
 
-        {/* Drag Overlay for better mobile feedback */}
+        {/* Enhanced Drag Overlay with sophisticated styling */}
         <DragOverlay>
           {draggedTask ? (
-            <div className="mobile-task-card mobile-gpu-accelerated opacity-90 transform rotate-3 scale-105 shadow-2xl ring-2 ring-primary/50">
-              <div className="bg-card border border-primary/30 rounded-lg p-3 md:p-4">
-                <h4 className="font-semibold text-sm text-card-foreground mb-1">
+            <div className="mobile-task-card mobile-gpu-accelerated opacity-95 transform rotate-2 scale-105 shadow-2xl ring-2 ring-primary/40 backdrop-blur-sm">
+              <div className="bg-card/95 border border-primary/20 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-sm text-card-foreground mb-2 line-clamp-1">
                   {draggedTask.title}
                 </h4>
                 {draggedTask.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                     {draggedTask.description.length > 60
                       ? `${draggedTask.description.substring(0, 60)}...`
                       : draggedTask.description
                     }
                   </p>
                 )}
+                <div className="mt-3 flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs px-2 py-0.5">
+                    {draggedTask.priority}
+                  </Badge>
+                </div>
               </div>
             </div>
           ) : null}

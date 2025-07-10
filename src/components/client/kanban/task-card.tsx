@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, User, MoreVertical, AlertCircle, Clock, CheckCircle, Users, Flag, Bug, Lightbulb, Zap, Settings, FileText, Target, Edit, Eye, UserPlus, Tag, Trash2, Paperclip } from 'lucide-react';
+import { MoreVertical, AlertCircle, Clock, CheckCircle, Users, Flag, Bug, Lightbulb, Zap, Settings, FileText, Target, Edit, Eye, Tag, Trash2, Paperclip } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
@@ -330,23 +330,23 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
       {...attributes}
       onClick={handleTaskClick}
       className={`group cursor-pointer touch-manipulation transition-all duration-300 ease-out
-        hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] hover:-translate-y-1
-        ${task.completed ? 'opacity-75 bg-muted/50' : 'bg-card'}
+        hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.01] hover:-translate-y-0.5
+        ${task.completed ? 'opacity-75 bg-muted/50' : 'bg-card/95 backdrop-blur-sm'}
         ${isDragging ?
-          'opacity-60 rotate-2 scale-105 shadow-2xl shadow-primary/30 z-50 ring-2 ring-primary/50 border-primary/50' :
+          'opacity-70 rotate-1 scale-105 shadow-2xl shadow-primary/30 z-50 ring-2 ring-primary/40 border-primary/40' :
           ''
         }
-        ${!task.completed && isOverdue ? 'border-destructive/50 shadow-destructive/10' :
-          !task.completed && isDueToday ? 'border-orange-400/50 shadow-orange-400/10' :
-          !task.completed && isDueTomorrow ? 'border-yellow-400/50 shadow-yellow-400/10' :
-          !task.completed && isDueSoon ? 'border-blue-400/50 shadow-blue-400/10' :
-          'border-border hover:border-primary/50'}
+        ${!task.completed && isOverdue ? 'border-destructive/60 shadow-destructive/20 bg-destructive/5' :
+          !task.completed && isDueToday ? 'border-orange-400/60 shadow-orange-400/20 bg-orange-50/50' :
+          !task.completed && isDueTomorrow ? 'border-yellow-400/60 shadow-yellow-400/20 bg-yellow-50/50' :
+          !task.completed && isDueSoon ? 'border-blue-400/60 shadow-blue-400/20 bg-blue-50/50' :
+          'border-border/60 hover:border-primary/60 shadow-sm'}
         ${isLoadingDetails ? 'opacity-50' : ''}
       `}
     >
-      <CardContent className="p-4 space-y-3">
-        {/* Task Header */}
-        <div className="flex items-start justify-between">
+      <CardContent className="p-4 space-y-4">
+        {/* Enhanced Task Header */}
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             {isEditingTitle ? (
               <input
@@ -355,7 +355,7 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onBlur={handleTitleSave}
                 onKeyDown={handleTitleKeyDown}
-                className="font-semibold text-sm leading-tight w-full bg-transparent border-b border-primary focus:outline-none focus:border-primary"
+                className="font-semibold text-sm leading-tight w-full bg-transparent border-b-2 border-primary focus:outline-none focus:border-primary/80 transition-colors"
                 autoFocus
               />
             ) : (
@@ -370,7 +370,7 @@ export default function TaskCard({ task, index, onUpdate, onDelete }: TaskCardPr
               </h4>
             )}
             {task.description && (
-              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-1">
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-2">
                 {task.description.length > 80 ? `${task.description.substring(0, 80)}...` : task.description}
               </p>
             )}

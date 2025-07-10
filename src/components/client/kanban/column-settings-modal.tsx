@@ -1,10 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Trash2, Palette } from 'lucide-react';
+import { Trash2, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface Column {
   id: string;
@@ -45,8 +53,6 @@ export default function ColumnSettingsModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  if (!isOpen) return null;
-
   const handleSave = async () => {
     if (!name.trim()) return;
 
@@ -79,21 +85,16 @@ export default function ColumnSettingsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background border rounded-lg w-full max-w-md mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Column Settings</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-secondary rounded"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Column Settings</DialogTitle>
+          <DialogDescription>
+            Customize your column name and appearance.
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="space-y-6">
           {/* Column Name */}
           <div className="space-y-2">
             <Label htmlFor="column-name">Column Name</Label>
@@ -148,11 +149,9 @@ export default function ColumnSettingsModal({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t">
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button
             variant="destructive"
-            size="sm"
             onClick={handleDelete}
             disabled={isSaving}
             className={isDeleting ? 'bg-red-600' : ''}
@@ -161,25 +160,23 @@ export default function ColumnSettingsModal({
             {isDeleting ? 'Confirm Delete' : 'Delete Column'}
           </Button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2">
             <Button
               variant="outline"
-              size="sm"
               onClick={onClose}
               disabled={isSaving}
             >
               Cancel
             </Button>
             <Button
-              size="sm"
               onClick={handleSave}
               disabled={!name.trim() || isSaving}
             >
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

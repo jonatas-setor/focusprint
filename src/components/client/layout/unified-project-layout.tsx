@@ -417,7 +417,7 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
                  }}>
               {activeView === 'kanban' ? (
                 <div className="mobile-kanban-container">
-                  <KanbanBoard projectId={projectId} />
+                  <KanbanBoard projectId={projectId} project={project} />
                 </div>
               ) : (
                 <div className="mobile-chat-container">
@@ -442,7 +442,7 @@ export default function UnifiedProjectLayout({ projectId }: UnifiedLayoutProps) 
             <div className={`${chatCollapsed ? 'flex-1' : 'w-[70%]'} flex flex-col overflow-hidden transition-all duration-300`}>
               <div className="flex-1 p-6 overflow-auto touch-scroll">
                 <div className="h-full">
-                  <KanbanBoard projectId={projectId} />
+                  <KanbanBoard projectId={projectId} project={project} />
                 </div>
               </div>
             </div>
