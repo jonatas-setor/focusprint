@@ -545,15 +545,6 @@ export default function ClientRegisterForm() {
     }
   };
 
-  const validatePassword = (password: string) => {
-    const errors = [];
-    if (password.length < 8) errors.push("mínimo 8 caracteres");
-    if (!/[A-Z]/.test(password)) errors.push("uma letra maiúscula");
-    if (!/[a-z]/.test(password)) errors.push("uma letra minúscula");
-    if (!/[0-9]/.test(password)) errors.push("um número");
-    return errors;
-  };
-
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
