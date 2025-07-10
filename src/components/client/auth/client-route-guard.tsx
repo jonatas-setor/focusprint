@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { ClientAuthService } from "@/lib/auth/client";
 import { createClient } from "@/lib/supabase/client";
 
+// Use the same supabase instance pattern as AdminRouteGuard
+const supabase = createClient();
+
 interface ClientRouteGuardProps {
   children: React.ReactNode;
 }
@@ -22,8 +25,6 @@ export default function ClientRouteGuard({ children }: ClientRouteGuardProps) {
     try {
       setLoading(true);
       console.log("🔐 ClientRouteGuard: Checking authentication...");
-
-      const supabase = createClient();
 
       // First check if we have a session
       const {
