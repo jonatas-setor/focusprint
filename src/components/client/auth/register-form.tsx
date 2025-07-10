@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { onboardingService, OnboardingData } from "@/lib/auth/onboarding";
 import { Github, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function ClientRegisterForm() {
@@ -11,6 +12,13 @@ export default function ClientRegisterForm() {
     confirmPassword: "",
     firstName: "",
     lastName: "",
+    clientName: "",
+    clientType: "personal" as
+      | "personal"
+      | "company"
+      | "organization"
+      | "department",
+    planType: "free" as "free" | "pro" | "business" | "enterprise",
   });
   const [loading, setLoading] = useState(false);
   const [githubLoading, setGithubLoading] = useState(false);
@@ -161,21 +169,58 @@ export default function ClientRegisterForm() {
       }
 
       if (data.user) {
-        setSuccess(
-          "✅ Conta criada com sucesso! Verifique seu email para confirmar a conta."
-        );
-        setFormData({
-          email: "",
-          password: "",
-          confirmPassword: "",
-          firstName: "",
-          lastName: "",
-        });
+        console.log("✅ Usuário criado, iniciando onboarding...");
 
-        // Redirecionar após 3 segundos
-        setTimeout(() => {
-          window.location.href = "/login?message=account-created";
-        }, 3000);
+        // Preparar dados para onboarding
+        const onboardingData: OnboardingData = {
+          clientName:
+            formData.clientName || `${formData.firstName} ${formData.lastName}`,
+          clientType: formData.clientType,
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          planType: formData.planType,
+        };
+
+        try {
+          // Executar onboarding automático
+          const onboardingResult = await onboardingService.completeOnboarding(
+            data.user,
+            onboardingData
+          );
+
+          console.log("✅ Onboarding completo:", onboardingResult);
+
+          setSuccess(
+            "✅ Conta criada com sucesso! Verifique seu email para confirmar a conta."
+          );
+
+          // Limpar formulário
+          setFormData({
+            email: "",
+            password: "",
+            confirmPassword: "",
+            firstName: "",
+            lastName: "",
+            clientName: "",
+            clientType: "personal",
+            planType: "free",
+          });
+
+          // Redirecionar após 3 segundos
+          setTimeout(() => {
+            window.location.href = "/login?message=account-created";
+          }, 3000);
+        } catch (onboardingError) {
+          console.error("❌ Erro no onboarding:", onboardingError);
+          // Mesmo com erro no onboarding, conta foi criada
+          setSuccess(
+            "✅ Conta criada! Verifique seu email. Alguns dados podem precisar ser configurados no dashboard."
+          );
+
+          setTimeout(() => {
+            window.location.href = "/login?message=account-created";
+          }, 3000);
+        }
       }
     } catch (err) {
       console.error("❌ Erro no registro:", err);
@@ -281,6 +326,59 @@ export default function ClientRegisterForm() {
               required
             />
           </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="clientType"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Tipo de Conta
+          </label>
+          <select
+            id="clientType"
+            value={formData.clientType}
+            onChange={(e) => handleInputChange("clientType", e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            required
+          >
+            <option value="personal">Uso Pessoal</option>
+            <option value="company">Empresa</option>
+            <option value="organization">Organização</option>
+            <option value="department">Departamento</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="clientName"
+            className="block text-sm font-medium text-gray-700"
+          >
+            {formData.clientType === "personal"
+              ? "Nome da Conta"
+              : formData.clientType === "company"
+              ? "Nome da Empresa"
+              : formData.clientType === "organization"
+              ? "Nome da Organização"
+              : "Nome do Departamento"}
+          </label>
+          <input
+            type="text"
+            id="clientName"
+            value={formData.clientName}
+            onChange={(e) => handleInputChange("clientName", e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder={
+              formData.clientType === "personal"
+                ? "Ex: João Silva"
+                : formData.clientType === "company"
+                ? "Ex: Minha Empresa Ltda"
+                : formData.clientType === "organization"
+                ? "Ex: ONG Esperança"
+                : "Ex: TI - Empresa X"
+            }
+            required
+          />
         </div>
 
         <div>
