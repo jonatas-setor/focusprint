@@ -49,12 +49,20 @@ export class ClientAuthService {
       }
 
       // Get user profile to determine type
+      console.log("🔍 Checking user_profiles for:", user.id);
       const { data: userProfile, error: profileError } = await supabase
         .from("user_profiles")
         .select("user_type, status")
         .eq("id", user.id)
         .eq("status", "active")
         .single();
+
+      console.log("🔍 user_profiles result:", {
+        hasProfile: !!userProfile,
+        profile: userProfile,
+        error: profileError?.message,
+        errorCode: profileError?.code,
+      });
 
       if (profileError || !userProfile) {
         console.log("❌ No user profile found:", profileError);
@@ -81,6 +89,7 @@ export class ClientAuthService {
 
       // For client users, verify they have a valid client profile
       if (userProfile.user_type === "client_user") {
+        console.log("🔍 Checking client_profiles for user_id:", user.id);
         const { data: clientProfile, error: clientProfileError } =
           await supabase
             .from("client_profiles")
@@ -89,7 +98,15 @@ export class ClientAuthService {
             .eq("is_active", true)
             .single();
 
+        console.log("🔍 client_profiles result:", {
+          hasClientProfile: !!clientProfile,
+          clientProfile: clientProfile,
+          error: clientProfileError?.message,
+          errorCode: clientProfileError?.code,
+        });
+
         if (clientProfileError || !clientProfile) {
+          console.log("❌ No client profile found:", clientProfileError);
           return null;
         }
 
