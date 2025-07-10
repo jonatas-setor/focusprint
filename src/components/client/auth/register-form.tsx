@@ -545,10 +545,6 @@ export default function ClientRegisterForm() {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
   const getClientTypeIcon = (type: string) => {
     switch (type) {
       case "personal":
