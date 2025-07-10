@@ -63,11 +63,14 @@ export class OnboardingService {
     userId: string,
     userType: "client_user" | "platform_admin"
   ) {
-    const { error } = await this.supabase.from("user_profiles").insert({
-      id: userId,
-      user_type: userType,
-      status: "active",
-    });
+    const { error } = await this.supabase
+      .schema("public")
+      .from("user_profiles")
+      .insert({
+        id: userId,
+        user_type: userType,
+        status: "active",
+      });
 
     if (error) {
       throw new Error(`Erro ao criar perfil de usuário: ${error.message}`);
@@ -92,6 +95,7 @@ export class OnboardingService {
     };
 
     const { data: client, error } = await this.supabase
+      .schema("client_data")
       .from("clients")
       .insert(clientData)
       .select("id")
@@ -114,15 +118,18 @@ export class OnboardingService {
     data: OnboardingData,
     role: "client_owner" | "client_admin" | "team_leader" | "team_member"
   ) {
-    const { error } = await this.supabase.from("client_profiles").insert({
-      user_id: userId,
-      client_id: clientId,
-      role: role,
-      first_name: data.firstName,
-      last_name: data.lastName,
-      is_active: true,
-      google_account_connected: false,
-    });
+    const { error } = await this.supabase
+      .schema("client_data")
+      .from("client_profiles")
+      .insert({
+        user_id: userId,
+        client_id: clientId,
+        role: role,
+        first_name: data.firstName,
+        last_name: data.lastName,
+        is_active: true,
+        google_account_connected: false,
+      });
 
     if (error) {
       throw new Error(`Erro ao criar perfil de cliente: ${error.message}`);
@@ -136,6 +143,7 @@ export class OnboardingService {
    */
   private async createDefaultTeam(clientId: string, companyName: string) {
     const { data: team, error } = await this.supabase
+      .schema("client_data")
       .from("teams")
       .insert({
         client_id: clientId,
@@ -161,12 +169,17 @@ export class OnboardingService {
     try {
       // Remove perfil de cliente se existir
       await this.supabase
+        .schema("client_data")
         .from("client_profiles")
         .delete()
         .eq("user_id", userId);
 
       // Remove perfil de usuário se existir
-      await this.supabase.from("user_profiles").delete().eq("id", userId);
+      await this.supabase
+        .schema("public")
+        .from("user_profiles")
+        .delete()
+        .eq("id", userId);
 
       console.log("🧹 Cleanup realizado");
     } catch (error) {
