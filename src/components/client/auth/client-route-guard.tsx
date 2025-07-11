@@ -3,10 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ClientAuthService } from "@/lib/auth/client";
-import { createClient } from "@/lib/supabase/client";
-
-// Use the same supabase instance pattern as AdminRouteGuard
-const supabase = createClient();
+import { supabase } from "@/lib/supabase/client";
 
 interface ClientRouteGuardProps {
   children: React.ReactNode;
