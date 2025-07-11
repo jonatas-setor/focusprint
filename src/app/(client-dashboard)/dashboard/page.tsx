@@ -1,15 +1,30 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Users,
   FolderOpen,
@@ -25,12 +40,17 @@ import {
   BarChart3,
   Crown,
   AlertCircle,
-  CheckCircle2
-} from 'lucide-react';
-import { DashboardService, DashboardStats, QuickAction } from '@/lib/services/dashboard-service';
-import { ClientProfile } from '@/lib/auth/types';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
+  CheckCircle2,
+} from "lucide-react";
+import {
+  DashboardService,
+  DashboardStats,
+  QuickAction,
+} from "@/lib/services/dashboard-service";
+import { ClientProfile } from "@/lib/auth/types";
+import { useClientAuth } from "@/hooks/use-client-auth";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function ClientDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -38,24 +58,8 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock profile for testing - in real app this would come from auth context
-  const profile: ClientProfile = {
-    id: '1',
-    user_id: '1',
-    client_id: '1',
-    role: 'owner',
-    first_name: 'João',
-    last_name: 'Silva',
-    is_active: true,
-    client: {
-      id: '1',
-      name: 'Acme Corporation',
-      plan_type: 'pro',
-      status: 'active',
-      max_users: 15,
-      max_projects: 10,
-    }
-  };
+  // Get real user profile from auth hook
+  const { profile } = useClientAuth();
 
   // Load dashboard data
   useEffect(() => {
@@ -66,14 +70,14 @@ export default function ClientDashboardPage() {
 
         const [dashboardStats, actions] = await Promise.all([
           DashboardService.getDashboardStats(),
-          DashboardService.getQuickActions()
+          DashboardService.getQuickActions(),
         ]);
 
         setStats(dashboardStats);
         setQuickActions(actions);
       } catch (err) {
-        console.error('Error loading dashboard data:', err);
-        setError('Falha ao carregar dados do dashboard');
+        console.error("Error loading dashboard data:", err);
+        setError("Falha ao carregar dados do dashboard");
       } finally {
         setLoading(false);
       }
@@ -88,7 +92,9 @@ export default function ClientDashboardPage() {
         <div className="text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
           <div>
-            <h3 className="text-lg font-semibold">Erro ao carregar dashboard</h3>
+            <h3 className="text-lg font-semibold">
+              Erro ao carregar dashboard
+            </h3>
             <p className="text-muted-foreground">{error}</p>
           </div>
           <Button onClick={() => window.location.reload()}>
@@ -118,8 +124,10 @@ export default function ClientDashboardPage() {
               variant="outline"
               className={cn(
                 "text-xs font-medium",
-                profile.client.plan_type === 'pro' && "border-amber-200 bg-amber-50 text-amber-700",
-                profile.client.plan_type === 'basic' && "border-blue-200 bg-blue-50 text-blue-700"
+                profile.client.plan_type === "pro" &&
+                  "border-amber-200 bg-amber-50 text-amber-700",
+                profile.client.plan_type === "basic" &&
+                  "border-blue-200 bg-blue-50 text-blue-700"
               )}
             >
               <Crown className="h-3 w-3 mr-1" />
@@ -133,16 +141,21 @@ export default function ClientDashboardPage() {
           {/* Teams Card */}
           <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Times Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Times Ativos
+              </CardTitle>
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <Users className="h-4 w-4 text-blue-500 cursor-help" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Times da Organização</h4>
+                    <h4 className="text-sm font-semibold">
+                      Times da Organização
+                    </h4>
                     <p className="text-xs text-muted-foreground">
-                      Times ativos representam grupos de trabalho organizados para colaboração em projetos.
+                      Times ativos representam grupos de trabalho organizados
+                      para colaboração em projetos.
                     </p>
                   </div>
                 </HoverCardContent>
@@ -161,9 +174,8 @@ export default function ClientDashboardPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {stats?.teams.total === 0
-                      ? 'Nenhum time criado ainda'
-                      : `${stats?.teams.total} total`
-                    }
+                      ? "Nenhum time criado ainda"
+                      : `${stats?.teams.total} total`}
                   </p>
                 </>
               )}
@@ -173,16 +185,21 @@ export default function ClientDashboardPage() {
           {/* Projects Card */}
           <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Projetos Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Projetos Ativos
+              </CardTitle>
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <FolderOpen className="h-4 w-4 text-green-500 cursor-help" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Projetos em Andamento</h4>
+                    <h4 className="text-sm font-semibold">
+                      Projetos em Andamento
+                    </h4>
                     <p className="text-xs text-muted-foreground">
-                      Projetos ativos são aqueles em desenvolvimento ativo com tarefas sendo executadas.
+                      Projetos ativos são aqueles em desenvolvimento ativo com
+                      tarefas sendo executadas.
                     </p>
                     {stats && (
                       <div className="text-xs space-y-1">
@@ -208,9 +225,8 @@ export default function ClientDashboardPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {stats?.projects.total === 0
-                      ? 'Nenhum projeto criado ainda'
-                      : `${stats?.projects.total} total`
-                    }
+                      ? "Nenhum projeto criado ainda"
+                      : `${stats?.projects.total} total`}
                   </p>
                 </>
               )}
@@ -220,16 +236,21 @@ export default function ClientDashboardPage() {
           {/* Tasks Card */}
           <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Tarefas Pendentes
+              </CardTitle>
               <HoverCard>
                 <HoverCardTrigger asChild>
                   <Clock className="h-4 w-4 text-orange-500 cursor-help" />
                 </HoverCardTrigger>
                 <HoverCardContent className="w-80">
                   <div className="space-y-2">
-                    <h4 className="text-sm font-semibold">Status das Tarefas</h4>
+                    <h4 className="text-sm font-semibold">
+                      Status das Tarefas
+                    </h4>
                     <p className="text-xs text-muted-foreground">
-                      Tarefas pendentes incluem itens "A Fazer" e "Em Progresso".
+                      Tarefas pendentes incluem itens "A Fazer" e "Em
+                      Progresso".
                     </p>
                     {stats && (
                       <div className="text-xs space-y-1">
@@ -251,13 +272,13 @@ export default function ClientDashboardPage() {
               ) : (
                 <>
                   <div className="text-2xl font-bold text-orange-600">
-                    {(stats?.tasks.pending || 0) + (stats?.tasks.in_progress || 0)}
+                    {(stats?.tasks.pending || 0) +
+                      (stats?.tasks.in_progress || 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {stats?.tasks.total === 0
-                      ? 'Nenhuma tarefa criada ainda'
-                      : `${stats?.tasks.total} total`
-                    }
+                      ? "Nenhuma tarefa criada ainda"
+                      : `${stats?.tasks.total} total`}
                   </p>
                 </>
               )}
@@ -267,7 +288,9 @@ export default function ClientDashboardPage() {
           {/* Completed Today Card */}
           <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Concluídas Hoje</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Concluídas Hoje
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -283,9 +306,8 @@ export default function ClientDashboardPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {stats?.tasks.completed_today === 0
-                      ? 'Nenhuma tarefa concluída hoje'
-                      : 'Parabéns pela produtividade!'
-                    }
+                      ? "Nenhuma tarefa concluída hoje"
+                      : "Parabéns pela produtividade!"}
                   </p>
                 </>
               )}
@@ -347,13 +369,24 @@ export default function ClientDashboardPage() {
                 <ScrollArea className="h-[300px]">
                   <div className="space-y-4">
                     {stats?.activity.map((activity, index) => (
-                      <div key={activity.id} className="flex items-start space-x-3 group">
+                      <div
+                        key={activity.id}
+                        className="flex items-start space-x-3 group"
+                      >
                         <div className="flex-shrink-0">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            {activity.type === 'project_created' && <FolderOpen className="h-4 w-4 text-primary" />}
-                            {activity.type === 'task_completed' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                            {activity.type === 'team_created' && <Users className="h-4 w-4 text-blue-500" />}
-                            {activity.type === 'user_joined' && <TrendingUp className="h-4 w-4 text-purple-500" />}
+                            {activity.type === "project_created" && (
+                              <FolderOpen className="h-4 w-4 text-primary" />
+                            )}
+                            {activity.type === "task_completed" && (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            )}
+                            {activity.type === "team_created" && (
+                              <Users className="h-4 w-4 text-blue-500" />
+                            )}
+                            {activity.type === "user_joined" && (
+                              <TrendingUp className="h-4 w-4 text-purple-500" />
+                            )}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -364,12 +397,15 @@ export default function ClientDashboardPage() {
                             {activity.description}
                           </p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {new Date(activity.timestamp).toLocaleDateString('pt-BR', {
-                              day: '2-digit',
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {new Date(activity.timestamp).toLocaleDateString(
+                              "pt-BR",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                           </p>
                         </div>
                       </div>
@@ -394,7 +430,8 @@ export default function ClientDashboardPage() {
                   </CardDescription>
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  {quickActions.filter(a => a.completed).length}/{quickActions.length}
+                  {quickActions.filter((a) => a.completed).length}/
+                  {quickActions.length}
                 </Badge>
               </div>
             </CardHeader>
@@ -402,7 +439,10 @@ export default function ClientDashboardPage() {
               {loading ? (
                 <div className="space-y-3">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <Skeleton className="h-5 w-5 rounded" />
                         <div className="space-y-2">
@@ -416,9 +456,12 @@ export default function ClientDashboardPage() {
                 </div>
               ) : (
                 quickActions.map((action) => {
-                  const IconComponent = action.icon === 'Users' ? Users :
-                                      action.icon === 'FolderOpen' ? FolderOpen :
-                                      TrendingUp;
+                  const IconComponent =
+                    action.icon === "Users"
+                      ? Users
+                      : action.icon === "FolderOpen"
+                      ? FolderOpen
+                      : TrendingUp;
 
                   return (
                     <div
@@ -432,12 +475,14 @@ export default function ClientDashboardPage() {
                     >
                       <div className="flex items-center justify-between p-3">
                         <div className="flex items-center space-x-3">
-                          <div className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
-                            action.completed
-                              ? "bg-green-100 text-green-600"
-                              : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
-                          )}>
+                          <div
+                            className={cn(
+                              "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                              action.completed
+                                ? "bg-green-100 text-green-600"
+                                : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
+                            )}
+                          >
                             {action.completed ? (
                               <CheckCircle2 className="h-4 w-4" />
                             ) : (
@@ -445,10 +490,12 @@ export default function ClientDashboardPage() {
                             )}
                           </div>
                           <div>
-                            <p className={cn(
-                              "font-medium transition-colors",
-                              action.completed && "text-green-700"
-                            )}>
+                            <p
+                              className={cn(
+                                "font-medium transition-colors",
+                                action.completed && "text-green-700"
+                              )}
+                            >
                               {action.title}
                             </p>
                             <p className="text-sm text-muted-foreground">
@@ -458,7 +505,10 @@ export default function ClientDashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {action.completed ? (
-                            <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-100 text-green-700 border-green-200"
+                            >
                               Concluído
                             </Badge>
                           ) : (
@@ -466,13 +516,19 @@ export default function ClientDashboardPage() {
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  action.priority === 'high' && "border-red-200 text-red-700",
-                                  action.priority === 'medium' && "border-orange-200 text-orange-700",
-                                  action.priority === 'low' && "border-blue-200 text-blue-700"
+                                  action.priority === "high" &&
+                                    "border-red-200 text-red-700",
+                                  action.priority === "medium" &&
+                                    "border-orange-200 text-orange-700",
+                                  action.priority === "low" &&
+                                    "border-blue-200 text-blue-700"
                                 )}
                               >
-                                {action.priority === 'high' ? 'Alta' :
-                                 action.priority === 'medium' ? 'Média' : 'Baixa'}
+                                {action.priority === "high"
+                                  ? "Alta"
+                                  : action.priority === "medium"
+                                  ? "Média"
+                                  : "Baixa"}
                               </Badge>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -525,13 +581,17 @@ export default function ClientDashboardPage() {
                   variant="outline"
                   className={cn(
                     "mb-3 text-sm font-semibold",
-                    profile.client.plan_type === 'pro' && "border-amber-200 bg-amber-50 text-amber-700",
-                    profile.client.plan_type === 'basic' && "border-blue-200 bg-blue-50 text-blue-700"
+                    profile.client.plan_type === "pro" &&
+                      "border-amber-200 bg-amber-50 text-amber-700",
+                    profile.client.plan_type === "basic" &&
+                      "border-blue-200 bg-blue-50 text-blue-700"
                   )}
                 >
                   {profile.client.plan_type.toUpperCase()}
                 </Badge>
-                <p className="text-sm font-medium text-muted-foreground">Plano Atual</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Plano Atual
+                </p>
               </div>
 
               {/* Users Usage */}
@@ -543,15 +603,27 @@ export default function ClientDashboardPage() {
                       /{profile.client.max_users}
                     </span>
                   </p>
-                  <p className="text-sm text-muted-foreground">Usuários Ativos</p>
+                  <p className="text-sm text-muted-foreground">
+                    Usuários Ativos
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span>Uso atual</span>
-                    <span>{Math.round(((stats?.teams.active || 0) / profile.client.max_users) * 100)}%</span>
+                    <span>
+                      {Math.round(
+                        ((stats?.teams.active || 0) /
+                          profile.client.max_users) *
+                          100
+                      )}
+                      %
+                    </span>
                   </div>
                   <Progress
-                    value={((stats?.teams.active || 0) / profile.client.max_users) * 100}
+                    value={
+                      ((stats?.teams.active || 0) / profile.client.max_users) *
+                      100
+                    }
                     className="h-2"
                   />
                 </div>
@@ -566,15 +638,28 @@ export default function ClientDashboardPage() {
                       /{profile.client.max_projects}
                     </span>
                   </p>
-                  <p className="text-sm text-muted-foreground">Projetos Criados</p>
+                  <p className="text-sm text-muted-foreground">
+                    Projetos Criados
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span>Uso atual</span>
-                    <span>{Math.round(((stats?.projects.total || 0) / profile.client.max_projects) * 100)}%</span>
+                    <span>
+                      {Math.round(
+                        ((stats?.projects.total || 0) /
+                          profile.client.max_projects) *
+                          100
+                      )}
+                      %
+                    </span>
                   </div>
                   <Progress
-                    value={((stats?.projects.total || 0) / profile.client.max_projects) * 100}
+                    value={
+                      ((stats?.projects.total || 0) /
+                        profile.client.max_projects) *
+                      100
+                    }
                     className="h-2"
                   />
                 </div>
@@ -605,14 +690,21 @@ export default function ClientDashboardPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span>Status:</span>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                      {profile.client.status === 'active' ? 'Ativo' : profile.client.status}
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-green-700"
+                    >
+                      {profile.client.status === "active"
+                        ? "Ativo"
+                        : profile.client.status}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span>Próxima cobrança:</span>
                     <span className="text-muted-foreground">
-                      {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}
+                      {new Date(
+                        Date.now() + 30 * 24 * 60 * 60 * 1000
+                      ).toLocaleDateString("pt-BR")}
                     </span>
                   </div>
                 </div>

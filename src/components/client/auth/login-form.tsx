@@ -51,20 +51,50 @@ export default function ClientLoginForm() {
       redirecting: false,
     });
 
+    // Função de retry para operações Supabase
+    const retryOperation = async (
+      operation: () => Promise<any>,
+      maxRetries = 3,
+      delay = 1000
+    ) => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 1)
+            addDebugLog(`🔄 Tentativa ${attempt}/${maxRetries}...`);
+          return await operation();
+        } catch (error: any) {
+          if (attempt === maxRetries) throw error;
+          if (
+            error.message?.includes("Load failed") ||
+            error.message?.includes("network") ||
+            error.message?.includes("fetch")
+          ) {
+            addDebugLog(
+              `⚠️ Tentativa ${attempt} falhou, tentando novamente em ${delay}ms...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            delay *= 1.5; // Backoff exponencial
+          } else {
+            throw error; // Se não for erro de rede, não retry
+          }
+        }
+      }
+    };
+
     try {
       addDebugLog("🚀 Iniciando processo de login...");
       addDebugLog(`📧 Email: ${email}`);
 
-      // Step 1: Validar credenciais
+      // Step 1: Validar credenciais com retry
       addDebugLog("🔍 Validando credenciais...");
       setLoginSteps((prev) => ({ ...prev, credentialsValidated: true }));
 
-      const { data, error: authError } = await supabase.auth.signInWithPassword(
-        {
+      const { data, error: authError } = await retryOperation(async () => {
+        return await supabase.auth.signInWithPassword({
           email,
           password,
-        }
-      );
+        });
+      });
 
       if (authError) {
         addDebugLog(`❌ Erro de autenticação: ${authError.message}`, "error");
