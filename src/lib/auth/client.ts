@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 export interface ClientAuthUser {
@@ -15,6 +15,10 @@ export class ClientAuthService {
    */
   static async getCurrentUser(): Promise<ClientAuthUser | null> {
     try {
+      // Create fresh Supabase client instance
+      const supabase = createClient();
+      console.log("🔧 ClientAuthService: Created fresh Supabase client");
+
       // Get authenticated user
       const {
         data: { user },
